@@ -1,0 +1,4 @@
+ENV: dev
+MESSAGE: 'Dev Env'
+DYNAMO_TABLE_IDENTIFIER_SESSION: dev-identifier-session-table
+REGION: sa-east-1

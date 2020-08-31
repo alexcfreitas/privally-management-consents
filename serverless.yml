@@ -1,0 +1,140 @@
+service: identifier-session
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  profile: privally
+  region: sa-east-1
+  timeout: 10
+  stage: ${opt:stage, 'prod'}
+  memorySize: 128
+  versionFunctions: false
+  apiKeys:
+    - ${self:custom.prefix}-apiKey
+  package:
+    excludeDevDependencies: true
+    exclude:
+      - .git/**
+      - .vscode/**
+      - .test/**
+
+  environment: #Global Environment variables
+    ${file(./configs/${self:provider.stage}.yml)}
+
+  iamRoleStatements: # Permissions for all of your functions can be set here
+    - Effect: Allow
+      Action: # Gives permission to DynamoDB tables in a specific region
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: 'arn:aws:dynamodb:*:*:*'
+
+custom:
+  region: ${self:provider.region}
+  stage: ${opt:stage, self:provider.stage}
+  prefix: ${self:custom.stage}-${self:service}
+  process: ${self:custom.prefix}-process
+  config: ${self:custom.prefix}-config
+  dynamo-identifier-session: ${self:custom.prefix}-table
+  documentation:
+    api:
+      info:
+        version: v0.0.1
+        title: Privally Session Information
+        description: API for Get Information of Session
+    models:
+      - name: sessionStartRequest
+        contentType: application/json
+        schema:
+          type: 'object'
+          properties:
+            session:
+              type: 'string'
+            identifier:
+              type: 'object'
+              properties:
+                key:
+                  type: 'string'
+                value:
+                  type: 'string'
+
+  serverless-offline:
+    host: '0.0.0.0'
+
+  customDomain:
+    rest:
+      domainName: ${self:provider.stage}.api.privally.global
+      stage: ${self:provider.stage}
+      basePath: session
+      certificateName: '*.api.privally.global'
+      createRoute53Record: true
+      endpointType: 'regional'
+      securityPolicy: tls_1_0
+
+plugins:
+  - serverless-offline
+  - serverless-pseudo-parameters
+  - serverless-reqvalidator-plugin
+  - serverless-aws-documentation
+  - serverless-dynamodb-local
+  - serverless-domain-manager
+
+functions:
+  start:
+    handler: modules/session/endpoints/create.create
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: start
+          method: post
+          private: true
+          cors: true
+          documentation:
+            summary: Send Information Session to Privally
+            description: This endpoint receive session token with identifier field
+            requestBody:
+              description: Request body for session
+            requestModels:
+              application/json: 'sessionStartRequest'
+          reqValidatorName: onlyBody
+
+resources:
+  Resources:
+    onlyBody:
+      Type: 'AWS::ApiGateway::RequestValidator'
+      Properties:
+        Name: 'only-body'
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: true
+
+    sessionIdentifierTokenTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.dynamo-identifier-session}
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: sk-pk-index
+            KeySchema:
+              - AttributeName: sk
+                KeyType: HASH
+              - AttributeName: pk
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL

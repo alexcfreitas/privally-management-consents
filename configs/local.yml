@@ -1,0 +1,4 @@
+ENV: local
+MESSAGE: 'Local Env'
+DYNAMO_TABLE_IDENTIFIER_SESSION: ${self:custom.dynamo-identifier-session} # Reference to Custom Env
+REGION: 'localhost'
