@@ -39,6 +39,12 @@ custom:
   prefix: ${self:service}-${self:custom.stage}
   dynamo-session: table-${self:custom.prefix}
   stageDomainNameApi: api.privally.ws
+  authorizer:
+    default:
+      name: authorizerAsset
+      type: token
+      identitySource: method.request.header.x-api-key
+      resultTtlInSeconds: 0
 
   documentation:
     api:
@@ -96,6 +102,9 @@ plugins:
   - serverless-plugin-ifelse
 
 functions:
+  authorizerAsset:
+    handler: modules/session/auth/authorizer.authorizer
+
   start:
     handler: modules/session/endpoints/create.create
     memorySize: 128
@@ -104,8 +113,8 @@ functions:
       - http:
           path: start
           method: post
-          private: true
           cors: true
+          authorizer: ${self:custom.authorizer.default}
           documentation:
             summary: Send Information Session to Privally
             description: This endpoint receive session token with identifier field

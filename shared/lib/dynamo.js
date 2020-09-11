@@ -37,6 +37,28 @@ const save = async (item, table) => {
 	});
 };
 
+const find = async (key, table) => {
+	return new Promise((resolve, reject) => {
+		const params = {
+			TableName: table,
+			Key: key,
+		};
+		dynamodb.get(params, function (err, data) {
+			if (err) {
+				console.error(
+					'Unable to query table. Error JSON:',
+					JSON.stringify(err, null, 2)
+				);
+				console.log('Rejection for newSession:', params);
+				reject(err);
+			} else {
+				resolve(data);
+			}
+		});
+	});
+};
+
 module.exports = {
 	save,
+	find,
 };
