@@ -1,4 +1,4 @@
 ENV: prod
-MESSAGE: 'Production Env'
-DYNAMO_TABLE_IDENTIFIER_SESSION: ${self:custom.dynamo-identifier-session} # Reference to Custom Env
-REGION: ${self:custom.region}
+MESSAGE: 'prod Env'
+DYNAMO_TABLE_SESSION: table-session-prod
+REGION: sa-east-1

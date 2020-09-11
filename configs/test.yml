@@ -1,4 +1,0 @@
-ENV: test
-MESSAGE: 'Test Env'
-DYNAMO_TABLE_IDENTIFIER_SESSION: ${self:custom.dynamo-identifier-session} # Reference to Custom Env
-REGION: ${self:custom.region}

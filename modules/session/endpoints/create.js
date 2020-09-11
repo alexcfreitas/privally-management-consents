@@ -3,14 +3,13 @@
 const dynamo = require('../../../shared/lib/dynamo');
 const response = require('../../../shared/lib/response');
 
-const DYNAMO_TABLE_IDENTIFIER_SESSION =
-	process.env.DYNAMO_TABLE_IDENTIFIER_SESSION;
+const DYNAMO_TABLE_SESSION = process.env.DYNAMO_TABLE_SESSION;
 /**
  * Register a single Session on DynamoDB
  * This endpoint receibe a simple POST Payload like this:
  *
  * {
- *   "session": "4f6d4f65d4f65ds465f4ds",
+ *   "spvll": "4f6d4f65d4f65ds465f4ds",
  *   "identifier":{
  *      "key":"carteirinha",
  *      "value":"54654564645"
@@ -27,10 +26,23 @@ module.exports.create = async (event, context, callback) => {
 		const data = JSON.parse(body);
 		console.log(data);
 
+		if (data.identifier.key !== 'carteirinha') {
+			return response.json(
+				callback,
+				{
+					result: {
+						code: 4001,
+						message: `identifier "${data.identifier.key}" does not exist`,
+					},
+				},
+				400
+			);
+		}
+
 		const session = {
-			pk: `SESSION#${data.session}`,
+			pk: `SPVLL#${data.spvll}`,
 			sk: `#IDENTIFIER#${data.identifier.value}`,
-			session: data.session,
+			spvll: data.spvll,
 			identifierKey: data.identifier.key,
 			identifierValue: data.identifier.value,
 			created_at: new Date().getTime(),
@@ -38,17 +50,29 @@ module.exports.create = async (event, context, callback) => {
 
 		console.log(session);
 
-		let sessionSaved = await dynamo.save(
-			session,
-			DYNAMO_TABLE_IDENTIFIER_SESSION
-		);
+		let sessionSaved = await dynamo.save(session, DYNAMO_TABLE_SESSION);
 
 		return response.json(
 			callback,
-			{ message: 'sessao gravada com sucesso' },
+			{
+				result: {
+					code: 2001,
+					message: 'session successfully recorded',
+				},
+			},
 			200
 		);
 	} catch (error) {
-		return response.json(callback, error, 500);
+		return response.json(
+			callback,
+			{
+				result: {
+					code: 5001,
+					message: 'session successfully recorded',
+					error,
+				},
+			},
+			500
+		);
 	}
 };

@@ -1,7 +1,7 @@
-service: identifier-session
-
+service: session
 provider:
   name: aws
+  endpointType: REGIONAL
   runtime: nodejs12.x
   profile: privally
   region: sa-east-1
@@ -36,10 +36,10 @@ provider:
 custom:
   region: ${self:provider.region}
   stage: ${opt:stage, self:provider.stage}
-  prefix: ${self:custom.stage}-${self:service}
-  process: ${self:custom.prefix}-process
-  config: ${self:custom.prefix}-config
-  dynamo-identifier-session: ${self:custom.prefix}-table
+  prefix: ${self:service}-${self:custom.stage}
+  dynamo-session: table-${self:custom.prefix}
+  stageDomainNameApi: api.privally.ws
+
   documentation:
     api:
       info:
@@ -52,7 +52,7 @@ custom:
         schema:
           type: 'object'
           properties:
-            session:
+            spvll:
               type: 'string'
             identifier:
               type: 'object'
@@ -62,26 +62,38 @@ custom:
                 value:
                   type: 'string'
 
-  serverless-offline:
-    host: '0.0.0.0'
+  serverlessIfElse:
+    - If: '"${self:custom.stage}" == "dev"'
+      Set:
+        custom.stageDomainNameApi: dev-sandbox.api.privally.ws
+
+    - If: '"${self:custom.stage}" == "sandbox"'
+      Set:
+        custom.stageDomainNameApi: sandbox.api.privally.ws
+
+    - If: '"${self:custom.stage}" == "prod"'
+      Set:
+        custom.stageDomainNameApi: api.privally.ws
+        custom.certificateName: '*.privally.ws'
 
   customDomain:
-    rest:
-      domainName: ${self:provider.stage}.api.privally.global
-      stage: ${self:provider.stage}
-      basePath: session
-      certificateName: '*.api.privally.global'
-      createRoute53Record: true
-      endpointType: 'regional'
-      securityPolicy: tls_1_0
+    domainName: ${self:custom.stageDomainNameApi}
+    stage: ${self:provider.stage}
+    basePath: session
+    # certificateName: '*.privally.ws'
+    certificateArn: 'arn:aws:acm:sa-east-1:772000878796:certificate/b3aacd15-7859-4022-9e6b-65c967eb9c03'
+    createRoute53Record: true
+    endpointType: 'regional'
+    securityPolicy: tls_1_2
+    apiType: rest
+    autoDomain: false
 
 plugins:
   - serverless-offline
-  - serverless-pseudo-parameters
   - serverless-reqvalidator-plugin
   - serverless-aws-documentation
-  - serverless-dynamodb-local
   - serverless-domain-manager
+  - serverless-plugin-ifelse
 
 functions:
   start:
@@ -114,10 +126,10 @@ resources:
         ValidateRequestBody: true
         ValidateRequestParameters: true
 
-    sessionIdentifierTokenTable:
+    sessionTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:custom.dynamo-identifier-session}
+        TableName: ${self:custom.dynamo-session}
         AttributeDefinitions:
           - AttributeName: pk
             AttributeType: S

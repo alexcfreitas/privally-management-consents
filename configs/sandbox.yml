@@ -1,0 +1,4 @@
+ENV: sandbox
+MESSAGE: 'sandbox Env'
+DYNAMO_TABLE_SESSION: table-session-sandbox
+REGION: sa-east-1
