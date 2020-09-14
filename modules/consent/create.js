@@ -1,7 +1,7 @@
 'use strict';
 
-const dynamo = require('../../../shared/lib/dynamo');
-const response = require('../../../shared/lib/response');
+const dynamo = require('../../shared/lib/dynamo');
+const response = require('../../shared/lib/response');
 
 const DYNAMO_TABLE_SESSION = process.env.DYNAMO_TABLE_SESSION;
 /**

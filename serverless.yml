@@ -103,10 +103,10 @@ plugins:
 
 functions:
   authorizerAsset:
-    handler: modules/session/auth/authorizer.authorizer
+    handler: modules/auth/authorizer.authorizer
 
   start:
-    handler: modules/session/endpoints/create.create
+    handler: modules/session/create.create
     memorySize: 128
     timeout: 30
     events:
@@ -124,6 +124,26 @@ functions:
               application/json: 'sessionStartRequest'
           reqValidatorName: onlyBody
 
+  organizationCreate:
+    handler: modules/organization/create.create
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: organization
+          method: post
+          cors: true
+          authorizer: ${self:custom.authorizer.default}
+          documentation:
+            summary: Create a new Organization to Privally
+            description: This endpoint save a new organization
+            requestBody:
+              description: Request body for create a new Organization
+            requestModels:
+              application/json: 'organizationCreateRequest'
+          reqValidatorName: onlyBody
+
+
 resources:
   Resources:
     onlyBody:
@@ -140,22 +160,22 @@ resources:
       Properties:
         TableName: ${self:custom.dynamo-session}
         AttributeDefinitions:
-          - AttributeName: pk
+          - AttributeName: PK
             AttributeType: S
-          - AttributeName: sk
+          - AttributeName: SK
             AttributeType: S
         BillingMode: PAY_PER_REQUEST
         KeySchema:
-          - AttributeName: pk
+          - AttributeName: PK
             KeyType: HASH
-          - AttributeName: sk
+          - AttributeName: SK
             KeyType: RANGE
         GlobalSecondaryIndexes:
-          - IndexName: sk-pk-index
+          - IndexName: SK-PK-index
             KeySchema:
-              - AttributeName: sk
+              - AttributeName: SK
                 KeyType: HASH
-              - AttributeName: pk
+              - AttributeName: PK
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL

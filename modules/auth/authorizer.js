@@ -1,6 +1,6 @@
 const _ = require('lodash');
-const auth = require('../../../shared/lib/auth');
-const dynamo = require('../../../shared/lib/dynamo');
+const auth = require('../../shared/lib/auth');
+const dynamo = require('../../shared/lib/dynamo');
 const DYNAMO_TABLE_SESSION = process.env.DYNAMO_TABLE_SESSION;
 
 const authorizeAsset = (asset, methodArn) => {
@@ -16,7 +16,7 @@ module.exports.authorizer = async (event, context, callback) => {
 		 *
 		 */
 
-		const asset = await dynamo.read(assetKey, DYNAMO_TABLE_SESSION);
+		const asset = await dynamo.find(assetKey, DYNAMO_TABLE_SESSION);
 		const isAllowed = authorizeAsset(asset, event.methodArn);
 		const effect = isAllowed ? 'Allow' : 'Deny';
 		const policyDocument = auth.buildIAMPolicy(

@@ -16,16 +16,28 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
  * @TODO @removeRow() - Delete a single row using Key
  */
 
-const save = async (item, table) => {
+
+ /**
+  * Example Put Item
+	var params = {
+		TableName : 'Table',
+		Item: {
+			HashKey: 'haskey',
+			NumAttribute: 1,
+			BoolAttribute: true,
+			ListAttribute: [1, 'two', false],
+			MapAttribute: { foo: 'bar'},
+			NullAttribute: null
+		}
+	};
+  */
+
+const save = async (params) => {
 	return new Promise((resolve, reject) => {
-		const params = {
-			TableName: table,
-			Item: item,
-		};
 		dynamodb.put(params, function (err, data) {
 			if (err) {
 				console.error(
-					'Unable to query table. Error JSON:',
+					'Unable to create item in table. Error JSON:',
 					JSON.stringify(err, null, 2)
 				);
 				console.log('Rejection for newSession:', params);
@@ -37,7 +49,24 @@ const save = async (item, table) => {
 	});
 };
 
-const find = async (key, table) => {
+const update = async (params) => {
+	return new Promise((resolve, reject) => {
+		dynamodb.update(params, function (err, data) {
+			if (err) {
+				console.error(
+					'Unable to Update item in table. Error JSON:',
+					JSON.stringify(err, null, 2)
+				);
+				console.log('Rejection for newSession:', params);
+				reject(err);
+			} else {
+				resolve(data);
+			}
+		});
+	});
+};
+
+const find = async (params) => {
 	return new Promise((resolve, reject) => {
 		const params = {
 			TableName: table,
@@ -60,5 +89,6 @@ const find = async (key, table) => {
 
 module.exports = {
 	save,
+	update,
 	find,
 };
