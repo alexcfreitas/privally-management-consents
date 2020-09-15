@@ -47,6 +47,7 @@ module.exports.create = async (event, context, callback) => {
 			identifierValue: data.identifier.value,
 			created_at: new Date().getTime(),
 		};
+		
 
 		console.log(session);
 

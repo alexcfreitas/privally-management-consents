@@ -1,5 +1,5 @@
 'use strict';
-const generatiorID = require('../../shared/lib/generatorID');
+const encryption = require('../../shared/lib/encryption');
 const dynamo = require('../../shared/lib/dynamo');
 const response = require('../../shared/lib/response');
 
@@ -20,9 +20,10 @@ module.exports.create = async (event, context, callback) => {
 	try {
 		const body = event.body ? event.body : event;
 		const data = JSON.parse(body);
+		
+		/**@TODO Validate Informations.*/
 
-		const ORG_ID = generatiorID.create();
-		// TODO Validate Informations.
+		const ORG_ID = encryption.getId();
 
 		let organization = {
 			TableName : DYNAMO_TABLE_SESSION,

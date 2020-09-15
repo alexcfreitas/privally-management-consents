@@ -1,5 +1,5 @@
 'use strict';
-const generatiorID = require('../../shared/lib/generatorID');
+const encryption = require('../../shared/lib/encryption');
 const dynamo = require('../../shared/lib/dynamo');
 const response = require('../../shared/lib/response');
 
@@ -8,10 +8,11 @@ const DYNAMO_TABLE_SESSION = process.env.DYNAMO_TABLE_SESSION;
  * Register a Asset on DynamoDB
  * This endpoint receibe a simple POST Payload like this:
  * {
- *   "org_id": "88242366-eff5-47e8-a732-b350704da6b7",
+ *   "org_id": "88242366eff547e8a732b350704da6b7",
  *   "asset":{
  *      "name":"unimed_platform",
- *      "x-api-key":"88242366eff547e8a732b350704da6b7"
+ *      "api_key":"FETY009KRP4DN7MYR3WT9PM0KC17",
+ * 		"origin": "centralnacionalunimed.com.br"
  *   }
  * }
  * After receibe a simple payload:
@@ -22,10 +23,11 @@ module.exports.create = async (event, context, callback) => {
 	try {
 		const body = event.body ? event.body : event;
 		const data = JSON.parse(body);
+		
+		/**@TODO Validate Informations.*/
 
 		const ORG_ID = data.org_id;
-		const ASSET_ID = generatiorID.create();
-		// TODO Validate Informations.
+		const ASSET_ID = encryption.getId();
 
 		let asset = {
 			TableName : DYNAMO_TABLE_SESSION,
@@ -34,8 +36,8 @@ module.exports.create = async (event, context, callback) => {
 				SK: `#ASSE#${ASSET_ID}`,
 				asset_id: ASSET_ID,
 				name: data.asset.name,
-				api_key: generatiorID.createApiKey(),
-				url_origin: data.asset.url_origin,
+				api_key: encryption.getApiKey(),
+				origin: data.asset.origin,
 				created_at: new Date().getTime(),
 			}
 		};

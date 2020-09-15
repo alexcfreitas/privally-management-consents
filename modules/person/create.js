@@ -41,7 +41,7 @@ module.exports.create = async (event, context, callback) => {
 
 		const session = {
 			pk: `SPVLL#${data.spvll}`,
-			sk: `#IDENTIFIER#${data.identifier.value}`,
+			sk: `#IDEN#${data.identifier.value}`,
 			spvll: data.spvll,
 			identifierKey: data.identifier.key,
 			identifierValue: data.identifier.value,

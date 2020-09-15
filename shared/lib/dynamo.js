@@ -68,10 +68,6 @@ const update = async (params) => {
 
 const find = async (params) => {
 	return new Promise((resolve, reject) => {
-		const params = {
-			TableName: table,
-			Key: key,
-		};
 		dynamodb.get(params, function (err, data) {
 			if (err) {
 				console.error(
