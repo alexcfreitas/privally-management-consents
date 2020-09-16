@@ -32,7 +32,7 @@ module.exports.create = async (event, context, callback) => {
 				{
 					result: {
 						code: 4001,
-						message: `identifier "${data.identifier.key}" does not exist`,
+						message: `identifier ${data.identifier.key} does not exist`,
 					},
 				},
 				400

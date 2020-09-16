@@ -3,7 +3,7 @@ provider:
   name: aws
   endpointType: REGIONAL
   runtime: nodejs12.x
-  profile: privally
+  # profile: privally
   region: sa-east-1
   timeout: 10
   stage: ${opt:stage, 'prod'}
@@ -65,11 +65,13 @@ custom:
   serverlessIfElse:
     - If: '"${self:custom.stage}" == "dev"'
       Set:
-        custom.stageDomainNameApi: dev-sandbox.api.privally.ws
+        custom.stageDomainNameApi: dev.api.privally.ws
+        certificateArn: 'arn:aws:acm:sa-east-1:772000878796:certificate/0dfc4a90-633b-485c-a54c-41b16889b283'
 
     - If: '"${self:custom.stage}" == "sandbox"'
       Set:
         custom.stageDomainNameApi: sandbox.api.privally.ws
+        certificateArn: 'arn:aws:acm:sa-east-1:772000878796:certificate/0dfc4a90-633b-485c-a54c-41b16889b283'
 
     - If: '"${self:custom.stage}" == "prod"'
       Set:
@@ -80,8 +82,8 @@ custom:
     domainName: ${self:custom.stageDomainNameApi}
     stage: ${self:provider.stage}
     basePath: session
-    # certificateName: '*.privally.ws'
-    certificateArn: 'arn:aws:acm:sa-east-1:772000878796:certificate/b3aacd15-7859-4022-9e6b-65c967eb9c03'
+    # certificateName: '*.api.privally.ws'
+    certificateArn: 'arn:aws:acm:sa-east-1:772000878796:certificate/0dfc4a90-633b-485c-a54c-41b16889b283'
     createRoute53Record: true
     endpointType: 'regional'
     securityPolicy: tls_1_2
