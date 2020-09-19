@@ -32,7 +32,7 @@ module.exports.create = async (event, context, callback) => {
 			TableName : DYNAMO_TABLE_SESSION,
 			Item: {
 				PK: `ORG#${ORG_ID}`,
-				SK: `#IDEN#${IDENTIFIER_ID}`,
+				SK: `IDEN#${IDENTIFIER_ID}`,
 				identifier_id: IDENTIFIER_ID,
 				key: data.identifier.key,
 				value: data.identifier.value,

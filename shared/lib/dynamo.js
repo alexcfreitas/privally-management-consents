@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
-const AWS = require('aws-sdk');
-AWS.config.update({ region: 'sa-east-1' });
+const AWS = require("aws-sdk");
+AWS.config.update({ region: "sa-east-1" });
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 /**
@@ -9,82 +9,65 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
  * @Author: Alexsandro Carvalho de Freitas
  *
  * @save() - Register Item on DynamoDB
- * @TODO @find() - Find Register by Key
- * @TODO @query() - Execute DynamoDB Query
+ * @find() - Find Register by Key
+ * @query() - Execute DynamoDB Query
+ * @update() - Execute a DynamoDB Update
  * @TODO @scan() - Execute DynamoDB Scan
- * @TODO @update() - Execute a DynamoDB Update
  * @TODO @removeRow() - Delete a single row using Key
  */
 
-
- /**
-  * Example Put Item
-	var params = {
-		TableName : 'Table',
-		Item: {
-			HashKey: 'haskey',
-			NumAttribute: 1,
-			BoolAttribute: true,
-			ListAttribute: [1, 'two', false],
-			MapAttribute: { foo: 'bar'},
-			NullAttribute: null
-		}
-	};
-  */
-
-const save = async (params) => {
-	return new Promise((resolve, reject) => {
-		dynamodb.put(params, function (err, data) {
-			if (err) {
-				console.error(
-					'Unable to create item in table. Error JSON:',
-					JSON.stringify(err, null, 2)
-				);
-				console.log('Rejection for newSession:', params);
-				reject(err);
-			} else {
-				resolve(data);
-			}
-		});
-	});
+const save = async params => {
+  try {
+    await dynamodb.put(params).promise();
+    return params;
+  } catch (error) {
+    console.log(
+      "Unable to create item in table. Error JSON:",
+      JSON.stringify(error, null, 2)
+    );
+    console.log("Rejection for:", params);
+  }
 };
 
-const update = async (params) => {
-	return new Promise((resolve, reject) => {
-		dynamodb.update(params, function (err, data) {
-			if (err) {
-				console.error(
-					'Unable to Update item in table. Error JSON:',
-					JSON.stringify(err, null, 2)
-				);
-				console.log('Rejection for newSession:', params);
-				reject(err);
-			} else {
-				resolve(data);
-			}
-		});
-	});
+const update = async params => {
+  try {
+    return await dynamodb.update(params).promise();
+  } catch (error) {
+    console.log(
+      "Unable to create item in table. Error JSON:",
+      JSON.stringify(error, null, 2)
+    );
+    console.log("Rejection for:", params);
+  }
 };
 
-const find = async (params) => {
-	return new Promise((resolve, reject) => {
-		dynamodb.get(params, function (err, data) {
-			if (err) {
-				console.error(
-					'Unable to query table. Error JSON:',
-					JSON.stringify(err, null, 2)
-				);
-				console.log('Rejection for newSession:', params);
-				reject(err);
-			} else {
-				resolve(data);
-			}
-		});
-	});
+const find = async params => {
+  try {
+    return await dynamodb.get(params).promise();
+  } catch (error) {
+    console.log(
+      "Unable to create item in table. Error JSON:",
+      JSON.stringify(error, null, 2)
+    );
+    console.log("Rejection for:", params);
+  }
 };
+
+const list = async params => {
+	try {
+	  return await dynamodb.query(params).promise();
+	} catch (error) {
+	  console.log(
+		"Unable to create item in table. Error JSON:",
+		JSON.stringify(error, null, 2)
+	  );
+	  console.log("Rejection for:", params);
+	}
+  };
 
 module.exports = {
-	save,
-	update,
-	find,
+  save,
+  update,
+  find,
+  list
 };

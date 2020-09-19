@@ -10,10 +10,23 @@
 		"integration-test": "mocha --recursive test/integration/",
 		"create_domain:dev": "AWS_PROFILE=privally SLS_DEBUG=* sls create_domain --stage dev",
 		"create_domain:sandbox": "AWS_PROFILE=privally SLS_DEBUG=* sls create_domain --stage sandbox",
-		"create-identifier-unit-test":"node ./test/identifier/create.js",
-		"create-asset-unit-test":"node ./test/asset/create.js",
-		"create-organization-unit-test":"node ./test/organization/create.js",
-		"list-asset-organization-unit-test":"node ./test/organization/listAssetById.js"
+
+		"create-session-unit-test": "node ./test/session/create.js",
+		"create-consent-unit-test": "node ./test/consent/create.js",
+		"create-person-unit-test": "node ./test/person/create.js",
+		"create-identifier-unit-test": "node ./test/identifier/create.js",
+		"create-asset-unit-test": "node ./test/asset/create.js",
+		"create-organization-unit-test": "node ./test/organization/create.js",
+
+		"create-person-identifier-unit-test": "node ./test/person-identifier/create.js",
+		"create-person-session-unit-test": "node ./test/person-session/create.js",
+		"create-person-consent-unit-test": "node ./test/person-consent/create.js",		
+
+		"list-asset-organization-unit-test": "node ./test/organization/listAssetById.js",
+		"list-identifier-organization-unit-test": "node ./test/organization/listIdentifierById.js",
+		"list-person-organization-unit-test": "node ./test/organization/listPersonsById.js",
+
+		"list-person-reference-organization-unit-test": "node ./test/person/listPersonReferencesByOrg.js"
 	},
 	"devDependencies": {
 		"aws-sdk": "^2.678.0",
