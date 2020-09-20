@@ -17,6 +17,7 @@
 		"create-identifier-unit-test": "node ./test/identifier/create.js",
 		"create-asset-unit-test": "node ./test/asset/create.js",
 		"create-organization-unit-test": "node ./test/organization/create.js",
+		"createWithList-organization-unit-test": "node ./test/organization/createWithList.js",
 
 		"create-person-identifier-unit-test": "node ./test/person-identifier/create.js",
 		"create-person-session-unit-test": "node ./test/person-session/create.js",

@@ -11,9 +11,7 @@ const DYNAMO_TABLE_SESSION = "test-privacy-apis-ERD";
  * This endpoint receive a simple POST Payload like this:
  * {
  *   "org_id": "88242366-eff5-47e8-a732-b350704da6b7",
- *   "identifier":{
- *      "key":"carteirinha"
- *   }
+ *   "identifier_key":"carteirinha"
  * }
  * After receive a simple payload:
  *

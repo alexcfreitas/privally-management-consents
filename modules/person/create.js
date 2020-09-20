@@ -1,78 +1,71 @@
-'use strict';
-
-const dynamo = require('../../shared/lib/dynamo');
-const response = require('../../shared/lib/response');
+"use strict";
+const { getId, getApiKey } = require("../../shared/lib/encryption");
+const dynamo = require("../../shared/lib/dynamo");
+const response = require("../../shared/lib/response");
 
 const DYNAMO_TABLE_SESSION = process.env.DYNAMO_TABLE_SESSION;
 /**
- * Register a single Session on DynamoDB
+ * Register a Person on DynamoDB
  * This endpoint receibe a simple POST Payload like this:
- *
  * {
- *   "spvll": "4f6d4f65d4f65ds465f4ds",
- *   "identifier":{
- *      "key":"carteirinha",
- *      "value":"54654564645"
- *   }
+ *   "org_id": "88242366-eff5-47e8-a732-b350704da6b7",
+ *   "identifier_key": "carteirinha", "cbenef", "cpf", "rg", "ra", "passport"
  * }
- *
- * After receibe a simple payload:
+ * After receive a simple payload:
  *
  * Register on DynamoDB Table
  */
+
 module.exports.create = async (event, context, callback) => {
-	try {
-		const body = event.body ? event.body : event;
-		const data = JSON.parse(body);
-		console.log(data);
+  try {
+    const body = event.body ? event.body : event;
+    const data = JSON.parse(body);
 
-		if (data.identifier.key !== 'carteirinha') {
-			return response.json(
-				callback,
-				{
-					result: {
-						code: 4001,
-						message: `identifier "${data.identifier.key}" does not exist`,
-					},
-				},
-				400
-			);
-		}
+    /**@TODO Validate Informations.*/
 
-		const session = {
-			pk: `SPVLL#${data.spvll}`,
-			sk: `#IDEN#${data.identifier.value}`,
-			spvll: data.spvll,
-			identifierKey: data.identifier.key,
-			identifierValue: data.identifier.value,
-			created_at: new Date().getTime(),
-		};
+    const ORG_ID = data.org_id;
+    const IDENTIFIER_ID = getId();
 
-		console.log(session);
+    let identifierData = {
+      TableName: DYNAMO_TABLE_SESSION,
+      Item: {
+        PK: `ORG#${ORG_ID}`,
+        SK: `IDEN#${IDENTIFIER_ID}`,
+        org_id: ORG_ID,
+        identifier_id: IDENTIFIER_ID,
+        identifier_key: data.identifier_key,
+        data: `IDEN#${identifier_key}`,
+        created_at: new Date().getTime(),
+        updated_at: new Date().getTime(),
+      },
+    };
 
-		let sessionSaved = await dynamo.save(session, DYNAMO_TABLE_SESSION);
+    const idenData = await dynamo.save(identifierData);
 
-		return response.json(
-			callback,
-			{
-				result: {
-					code: 2001,
-					message: 'session successfully recorded',
-				},
-			},
-			200
-		);
-	} catch (error) {
-		return response.json(
-			callback,
-			{
-				result: {
-					code: 5001,
-					message: 'session successfully recorded',
-					error,
-				},
-			},
-			500
-		);
-	}
+    return response.json(
+      callback,
+      {
+        result: {
+          code: 2001,
+          message: "Person successfully recorded",
+          identifier: {
+            id: idenData.Item.identifier_id,
+          },
+        },
+      },
+      200
+    );
+  } catch (error) {
+    return response.json(
+      callback,
+      {
+        result: {
+          code: 5001,
+          message: "Person not recorded try again ",
+          error,
+        },
+      },
+      500
+    );
+  }
 };
