@@ -1,4 +1,4 @@
 ENV: dev
 MESSAGE: 'Dev Env'
-DYNAMO_TABLE_SESSION: table-session-dev
+DYNAMO_TABLE: ${self:custom.dynamo-consent-management} # Reference to Custom Env
 REGION: sa-east-1

@@ -6,7 +6,7 @@ const dynamodb = require('../../shared/lib/dynamo');
  */
 const { getId, getApiKey } = require("../../shared/lib/encryption");
 
-const DYNAMO_TABLE_SESSION = "test-privacy-apis-ERD";
+const DYNAMO_TABLE = "test-privacy-apis-ERD";
 
 const listPersonReferencesByOrg = async event => {
   const data = event.body ? event.body : event;
@@ -17,7 +17,7 @@ const listPersonReferencesByOrg = async event => {
   const PERSON_ID = data.person_id;
 
   let params = {
-    TableName: DYNAMO_TABLE_SESSION,
+    TableName: DYNAMO_TABLE,
     KeyConditionExpression: "#PK = :PK",
     ExpressionAttributeNames: {"#PK":"PK"},
     ExpressionAttributeValues: {

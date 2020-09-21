@@ -3,7 +3,7 @@ const AWS = require('aws-sdk');
 AWS.config.update({ region: 'sa-east-1' });
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-const DYNAMO_TABLE_SESSION = "test-privacy-apis-ERD";
+const DYNAMO_TABLE = "test-privacy-apis-ERD";
 /**
  * List All Assets of Organization on DynamoDB
  * This endpoint receive a simple GET with queryparams
@@ -17,7 +17,7 @@ const listAssetsByOrganizationId = (event) => {
   const ORG_ID = data.org_id;
 
   let params = {
-    TableName: DYNAMO_TABLE_SESSION,
+    TableName: DYNAMO_TABLE,
     KeyConditionExpression: "#PK = :PK and begins_with(#SK, :SK)",
     ExpressionAttributeNames: {"#PK":"PK", "#SK":"SK"},
     ExpressionAttributeValues: {

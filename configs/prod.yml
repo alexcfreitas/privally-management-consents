@@ -1,4 +1,4 @@
 ENV: prod
 MESSAGE: 'prod Env'
-DYNAMO_TABLE_SESSION: table-session-prod
+DYNAMO_TABLE: ${self:custom.dynamo-consent-management} # Reference to Custom Env
 REGION: sa-east-1

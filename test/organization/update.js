@@ -5,7 +5,7 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 const { getId, getApiKey } = require("../../shared/lib/encryption");
 
-const DYNAMO_TABLE_SESSION = "test-privacy-apis-ERD";
+const DYNAMO_TABLE = "test-privacy-apis-ERD";
 /**
  * Register a Organization on DynamoDB
  * This endpoint receibe a simple POST Payload like this:
@@ -27,7 +27,7 @@ const updateOrganization = (event) => {
   const ORG_ID = data.org_id;
 
   let params = {
-    TableName: DYNAMO_TABLE_SESSION,
+    TableName: DYNAMO_TABLE,
     Key: { PK: `ORG#${ORG_ID}`, SK: `#METADATA#${ORG_ID}`},
     UpdateExpression: "set #org_id = :org_id, updated_at = :updated_at",
     ExpressionAttributeNames: {"#org_id":"org_id"},

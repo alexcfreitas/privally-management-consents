@@ -1,7 +1,7 @@
 const dynamodb = require("../../shared/lib/dynamo");
 const { getId, getApiKey } = require("../../shared/lib/encryption");
 
-const DYNAMO_TABLE_SESSION = "test-privacy-apis-ERD";
+const DYNAMO_TABLE = "test-privacy-apis-ERD";
 /**
  * Register a Asset on DynamoDB
  * This endpoint receive a simple POST Payload:
@@ -17,7 +17,7 @@ const createOrganization = async (event) => {
   const ORG_ID = getId();
 
   let params = {
-    TableName: DYNAMO_TABLE_SESSION,
+    TableName: DYNAMO_TABLE,
     Item: {
       PK: `ORG#${ORG_ID}`,
       SK: `#METADATA#${ORG_ID}`,

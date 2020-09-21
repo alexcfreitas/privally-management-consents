@@ -5,7 +5,7 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 const { getId, getApiKey } = require("../../shared/lib/encryption");
 
-const DYNAMO_TABLE_SESSION = "test-privacy-apis-ERD";
+const DYNAMO_TABLE = "test-privacy-apis-ERD";
 /**
  * Register a Session on DynamoDB
  * This endpoint receive a simple POST Payload like this:
@@ -25,7 +25,7 @@ const createSession = async (event) => {
     const SESSION_ID = getId();
 
     let params = {
-      TableName: DYNAMO_TABLE_SESSION,
+      TableName: DYNAMO_TABLE,
       Item: {
         PK: `ORG#${ORG_ID}`,
         SK: `SESS#${SESSION_ID}`,

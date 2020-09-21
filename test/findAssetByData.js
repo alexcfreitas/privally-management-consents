@@ -3,28 +3,34 @@ const AWS = require('aws-sdk');
 AWS.config.update({ region: 'sa-east-1' });
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-const DYNAMO_TABLE = "test-privacy-apis-ERD";
+const DYNAMO_TABLE = "table-consent-management-dev";
 /**
  * List All Persons of Organization on DynamoDB
  * This endpoint receive a simple GET with queryparams
  */
 
-const listPersonsByOrganizationId = (event) => {
+const findAssetByApiKey = (event) => {
   const data = event.body ? event.body : event;
 
   /**@TODO Validate Informations.*/
 
-  const ORG_ID = data.org_id;
+  const API_KEY = data.api_key;
 
   let params = {
     TableName: DYNAMO_TABLE,
-    KeyConditionExpression: "#PK = :PK and begins_with(#SK, :SK)",
-    ExpressionAttributeNames: {"#PK":"PK", "#SK":"SK"},
+    IndexName: 'data_key-filter',
+    KeyConditionExpression: "#data_key = :data_key",
+    ExpressionAttributeNames: {"#data_key":"data_key"},
     ExpressionAttributeValues: {
-      ":PK":`ORG#${ORG_ID}`,
-      ":SK": `PERS#`
+      ":data_key":`ASSE#${API_KEY}`,
     }
   };
+
+  // let params = {
+  //   TableName: DYNAMO_TABLE,
+  //   FilterExpression : 'data_key = :data_key',
+  //   ExpressionAttributeValues : {':data_key': `ASSE#${API_KEY}`}
+  // }
 
   dynamodb.query(params, function (err, data) {
     if (err) {
@@ -34,13 +40,14 @@ const listPersonsByOrganizationId = (event) => {
       );
       console.log("Rejection for newSession:", params);
     } else {
-      console.log("PERSONS --> ", JSON.stringify(data, null, 2));
+      console.log("ASSET --> ", JSON.stringify(data, null, 2));
     }
   });
 };
 
 (() => {
-  listPersonsByOrganizationId({
-    org_id: "a115f8136c2d4fb1944c069d110dc1cc"
+  findAssetByApiKey({
+    // api_key: "S82DD1J6WDMHD1QGXM67MPK8PATP",
+    api_key: "S82DD1J6WDMHD1QGXM67MPK8PATPs",
   });
 })();
