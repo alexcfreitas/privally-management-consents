@@ -1,10 +1,7 @@
 "use strict";
 const {
-  Session,
-  Identifier,
-  Person,
   PersonIdentifier,
-  PersonSession,
+  PersonConsent,
 } = require("common").Service;
 
 const response = require("common").Response;
@@ -13,9 +10,8 @@ const response = require("common").Response;
  * This endpoint receibe a simple POST Payload like this:
  *
  * {
- *   "spvll": "4f6d4f65d4f65ds465f4ds",
  *   "identifier":{
- *      "key":" ",
+ *      "key":"cbenef",
  *      "value":"54654564645"
  *   }
  * }
@@ -36,70 +32,61 @@ module.exports.run = async (event, context, callback) => {
       }
     );
 
-    if (Object.keys(personIdentifier).length > 0) {
+    if (Object.keys(personIdentifier).length === 0) {
+      return response.json(
+        callback,
+        {
+          result: {
+            code: 4041,
+            message: "Person not founded",
+          },
+        },
+        404
+      );
+    }
+
+    let isSameIdentifierKey =
+      personIdentifier.person_identifier_key === data.identifier.key;
+
+    if (!isSameIdentifierKey) {
       return response.json(
         callback,
         {
           result: {
             code: 4001,
-            message: `session has already been recorded`,
+            message: `Person founded but is not same Identifier Key try again`,
           },
         },
         400
       );
     }
 
-    const identifier = await Identifier.findIdentifierByKey({
+    // Find Person-Consent
+    const person_consent = await PersonConsent.findPersonConsentByIdenValue({
       org_id: asset.org_id,
-      identifier_key: data.identifier.key,
+      person_identifier_value: data.identifier.value,
     });
 
-    if (Object.keys(identifier).length === 0) {
+    if (Object.keys(person_consent).length === 0) {
       return response.json(
         callback,
         {
           result: {
             code: 4001,
-            message: `identifier ${data.identifier.key} does not exist`,
+            message: `person consent does not exist`,
           },
         },
         400
       );
     }
-
-    // Create Person
-    const { person_id } = await Person.create({
-      org_id: asset.org_id,
-    });
-    // Create Session
-    const { session_id } = await Session.create({
-      org_id: asset.org_id,
-      spvll: data.spvll,
-    });
-    // Create Person-Identifier
-    const person_identifier = await PersonIdentifier.create({
-      org_id: asset.org_id,
-      person_id,
-      identifier_id: identifier.identifier_id,
-      person_identifier_key: data.identifier.key,
-      person_identifier_value: data.identifier.value,
-    });
-    // Create Person-Session
-    const person_session = await PersonSession.create({
-      org_id: asset.org_id,
-      person_id,
-      session_id,
-      person_identifier_key: data.identifier.key,
-      person_identifier_value: data.identifier.value,
-      spvll: data.spvll,
-    });
 
     return response.json(
       callback,
       {
         result: {
           code: 2001,
-          message: "session successfully recorded",
+          message: "person consent founded",
+          consent: person_consent,
         },
       },
       200
@@ -110,7 +97,7 @@ module.exports.run = async (event, context, callback) => {
       {
         result: {
           code: 5001,
-          message: "session not recorded try again",
+          message: "person consent not founded try again",
           error,
         },
       },

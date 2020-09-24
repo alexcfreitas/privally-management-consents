@@ -1,34 +1,33 @@
-
-const auth = require('../shared/lib/auth');
-const dynamo = require('../shared/lib/dynamo');
-const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
+const { Asset } = require("common").Service;
+const auth = require("common").Auth;
 
 const authorizeAsset = (asset, methodArn) => {
-	// TODO: Validate Bussines Rules in Assets
-	// return !asset.isBlocked;
-	return true
+  // TODO: Validate Bussines Rules in Assets
+  // return !asset.isBlocked;
+  return true;
 };
 
 module.exports.authorizer = async (event, context, callback) => {
-	const assetKey = event.authorizationToken;
+  try {
+    const asset = await Asset.findAssetByApiKey({
+      api_key: event.authorizationToken,
+    });
 
-	try {
-		/** @TODO @find() - Find Asset by Key
-		 *
-		 */
+    const isAllowed =
+      Object.keys(asset).length > 0
+        ? authorizeAsset(asset, event.methodArn)
+        : false;
+    const effect = isAllowed ? "Allow" : "Deny";
+    const authorizerContext = { asset: JSON.stringify(asset) };
+    const policyDocument = auth.buildIAMPolicy(
+      event.authorizationToken,
+      effect,
+      event.methodArn,
+      authorizerContext
+    );
 
-		// const asset = await dynamo.find(assetKey, DYNAMO_TABLE);
-
-		const isAllowed = authorizeAsset({}, event.methodArn);
-		const effect = isAllowed ? 'Allow' : 'Deny';
-		const policyDocument = auth.buildIAMPolicy(
-			'teste',
-			effect,
-			event.methodArn
-		);
-
-		callback(null, policyDocument);
-	} catch (err) {
-		callback('Unauthorized'); // Return a 401 Unauthorized response
-	}
+    callback(null, policyDocument);
+  } catch (err) {
+    callback("Unauthorized"); // Return a 401 Unauthorized response
+  }
 };

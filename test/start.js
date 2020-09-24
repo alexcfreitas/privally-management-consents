@@ -8,6 +8,7 @@ const {
 } = require("common").Service;
 
 const response = require("common").Response;
+const Paylod = require("./event.json");
 /**
  * Register a single Session on DynamoDB
  * This endpoint receibe a simple POST Payload like this:
@@ -23,11 +24,11 @@ const response = require("common").Response;
  * After receibe a simple payload:
  * Register on DynamoDB Table
  */
-module.exports.run = async (event, context, callback) => {
+const run = async (event, context, callback) => {
   try {
-    const body = event.body ? event.body : event;
-    const asset = JSON.parse(event.requestContext.authorizer.asset);
-    const data = JSON.parse(body);
+    const data = event.body ? event.body : event;
+    const asset = event.requestContext.authorizer.asset;
+    // const data = JSON.parse(body);
 
     const personIdentifier = await PersonIdentifier.findPersonIdentifierByIdenValue(
       {
@@ -36,7 +37,10 @@ module.exports.run = async (event, context, callback) => {
       }
     );
 
-    if (Object.keys(personIdentifier).length > 0) {
+    if (
+      Object.keys(personIdentifier).length > 0 &&
+      personIdentifier.org_id === asset.org_id
+    ) {
       return response.json(
         callback,
         {
@@ -118,3 +122,21 @@ module.exports.run = async (event, context, callback) => {
     );
   }
 };
+
+
+const callback = (erro, data) => {
+  console.info("*******************");
+  console.info(
+    "Erro: ",
+    erro === null ? "Não há erros" : JSON.stringify(erro, null, 2)
+  );
+  console.info("*******************");
+  console.info("Sucesso: ", JSON.stringify(data, null, 2));
+  console.info("*******************");
+};
+
+(async () => {
+  let test = run(Paylod, {}, callback);
+
+  console.log("RESULT --> ", JSON.stringify(test, null, 2));
+})();

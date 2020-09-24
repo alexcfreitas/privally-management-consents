@@ -1,14 +1,15 @@
 "use strict";
-const { getId, getApiKey } = require("../shared/lib/encryption");
-const dynamodb = require("../shared/lib/dynamo");
+const { getId, getApiKey } = require("../lib/encryption");
+const dynamodb = require("../lib/dynamo");
 
 const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
+// const DYNAMO_TABLE = "test-privacy-apis-ERD";
 
 /**
- * Person CRUD Abstraction
+ * Organization CRUD Abstraction
  * @Author: Alexsandro Carvalho de Freitas
  *
- * @create() - Register Person on DynamoDB
+ * @create() - Register Organization on DynamoDB
  * @TODO @get() - 
  * @TODO @find() - 
  * @TODO @update() - 
@@ -20,31 +21,36 @@ const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
 const create = async (event) => {
   try {
     const data = event.body ? event.body : event;
-    // const data = JSON.parse(body);
     /**@TODO Validate Informations.*/
 
-    const ORG_ID = data.org_id;
-    const PERSON_ID = getId();
+    let ORG_ID = getId();
 
     let params = {
       TableName: DYNAMO_TABLE,
       Item: {
         PK: `ORG#${ORG_ID}`,
-        SK: `PERS#${PERSON_ID}`,
+        SK: `#METADATA#${ORG_ID}`,
         org_id: ORG_ID,
-        person_id: PERSON_ID,
+        company_id: data.company_id,
+        name: data.name,
+        domain_name: data.domain_name,
+        country: data.country,
+        data_key: `ORG#${data.company_id}`,
         created_at: new Date().getTime(),
         updated_at: new Date().getTime(),
       },
     };
-    const persData = await dynamodb.save(params);
+    const orgData = await dynamodb.save(params);
 
     return {
-      org_id: persData.Item.org_id,
-      person_id: persData.Item.person_id
+      org_id: orgData.Item.org_id,
+      company_id: orgData.Item.company_id,
+      name: orgData.Item.name,
+      domain_name: orgData.Item.domain_name,
+      data: orgData.Item.data,
     };
   } catch (error) {
-    throw new Error("Person not recorded try again");
+    throw new Error("Organization not recorded try again");
   }
 };
 

@@ -1,6 +1,6 @@
 "use strict";
-const { getId, getApiKey } = require("../shared/lib/encryption");
-const dynamodb = require("../shared/lib/dynamo");
+const { getId, getApiKey } = require("../lib/encryption");
+const dynamodb = require("../lib/dynamo");
 
 const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
 // const DYNAMO_TABLE = "test-privacy-apis-ERD";
@@ -50,8 +50,37 @@ const create = async (event) => {
   }
 };
 
+
+const findIdentifierByKey = async (event) => {
+  try {
+    const data = event.body ? event.body : event;
+
+    /**@TODO Validate Informations.*/
+    const ORG_ID = data.org_id;
+    const IDENTIFIER_KEY = data.identifier_key;
+
+    let params = {
+      TableName: DYNAMO_TABLE,
+      IndexName: "PK-data_key-Filter",
+      KeyConditionExpression: "#PK = :PK and begins_with(#SK, :SK)",
+      ExpressionAttributeNames: { "#PK":"PK", "#SK": "data_key" },
+      ExpressionAttributeValues: {
+        ":PK": `ORG#${ORG_ID}`,
+        ":SK": `IDEN#${IDENTIFIER_KEY}`
+      },
+    };
+
+    const identifierData = await dynamodb.list(params);
+    return {...identifierData.Items[0]};
+
+  } catch (error) {
+    throw new Error("Identifier not founded try again");
+  }
+};
+
 module.exports = {
   create,
+  findIdentifierByKey,
   // get,
   // find,
   // update,

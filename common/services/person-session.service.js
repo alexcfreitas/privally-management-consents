@@ -1,6 +1,6 @@
 "use strict";
-const { getId, getApiKey } = require("../shared/lib/encryption");
-const dynamodb = require("../shared/lib/dynamo");
+const { getId, getApiKey } = require("../lib/encryption");
+const dynamodb = require("../lib/dynamo");
 
 const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
 
@@ -27,6 +27,8 @@ const create = async (event) => {
     const PERSON_ID = data.person_id;
     const SESSION_ID = data.session_id;
     const PERSON_SESSION_ID = getId();
+    const PERSON_IDENTIFIER_KEY = data.person_identifier_key; 
+    const PERSON_IDENTIFIER_VALUE = data.person_identifier_value;
 
     let params = {
       TableName: DYNAMO_TABLE,
@@ -36,8 +38,10 @@ const create = async (event) => {
         org_id: ORG_ID,
         person_id: PERSON_ID,
         person_session_id: PERSON_SESSION_ID,
+        person_identifier_key: PERSON_IDENTIFIER_KEY,
+        person_identifier_value: PERSON_IDENTIFIER_VALUE,
         spvll: data.spvll,
-        data_key: `PERS#SESS#${data.spvll}`,
+        data_key: `ORG#${ORG_ID}#PERS#SESS#${PERSON_IDENTIFIER_VALUE}`,
         created_at: new Date().getTime(),
         updated_at: new Date().getTime(),
       },
@@ -54,8 +58,35 @@ const create = async (event) => {
   }
 };
 
+const findPersonSessionByIdenValue = async (event) => {
+  try {
+    const data = event.body ? event.body : event;
+
+    /**@TODO Validate Informations.*/
+    const ORG_ID = data.org_id;
+    const PERSON_IDENTIFIER_VALUE = data.person_identifier_value;
+
+    let params = {
+      TableName: DYNAMO_TABLE,
+      IndexName: "data_key-filter",
+      KeyConditionExpression: "#data_key = :data_key",
+      ExpressionAttributeNames: { "#data_key": "data_key" },
+      ExpressionAttributeValues: {
+        ":data_key": `ORG#${ORG_ID}#PERS#SESS#${PERSON_IDENTIFIER_VALUE}`,
+      },
+    };
+
+    const personSessionData = await dynamodb.list(params);
+    return {...personSessionData.Items[0]};
+
+  } catch (error) {
+    throw new Error("PersonSession not founded try again");
+  }
+};
+
 module.exports = {
   create,
+  findPersonSessionByIdenValue
   // get,
   // find,
   // update,

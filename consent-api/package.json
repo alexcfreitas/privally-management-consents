@@ -1,9 +1,9 @@
 {
-	"name": "organization-consent-management",
+	"name": "session-consent-management",
 	"version": "1.0.0",
 	"description": "API of session token information",
 	"scripts": {
-		"deploy:dev": "./deploy.sh dev",
+		"deploy:dev": "SLS_DEBUG=* sls deploy --stage dev",
 		"docker": "docker-compose up --force-recreate",
 		"dev": "npm install; serverless offline start --stage local",
 		"unit-test": "mocha --recursive test/unit/",
@@ -42,7 +42,8 @@
 		"serverless-dynamodb-local": "0.2.38",
 		"serverless-offline": "6.7.0",
 		"serverless-offline-lambda": "^1.0.6",
-		"serverless-plugin-ifelse": "1.0.5"
+		"serverless-plugin-ifelse": "1.0.5",
+		"serverless-plugin-include-dependencies": "^4.1.0"
 	},
 	"dependencies": {
 		"common": "file:../common",

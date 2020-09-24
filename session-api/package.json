@@ -45,10 +45,8 @@
 		"serverless-plugin-ifelse": "1.0.5"
 	},
 	"dependencies": {
-		"bluebird": "^3.7.2",
+		"common": "file:../common",
 		"serverless-pseudo-parameters": "^1.6.0",
-		"serverless-reqvalidator-plugin": "1.0.3",
-		"uuid-apikey": "1.4.6",
-		"yamljs": "^0.3.0"
+		"serverless-reqvalidator-plugin": "1.0.3"
 	}
 }

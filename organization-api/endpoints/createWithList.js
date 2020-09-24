@@ -1,14 +1,14 @@
-const OrganizationService = require('../services/organization.service'); 
-const AssetService = require('../services/asset.service'); 
-const IdentifierService = require('../services/identifier.service'); 
+const { Organization, Identifier, Asset } = require('common').Service;
+const response = require('common').Response;
 
-const response = require('../shared/lib/response');
-
-module.exports.create = async (event, context, callback) => {
+module.exports.run = async (event, context, callback) => {
   try {
     const body = event.body ? event.body : event;
     const data = JSON.parse(body);
     const responseData = [];
+    console.log("event DATA  --> ", JSON.stringify(event, null, 2));
+    console.log("context DATA  --> ", JSON.stringify(context, null, 2));
+    
 
     for await (organization of data) {
       const {
@@ -20,7 +20,7 @@ module.exports.create = async (event, context, callback) => {
         identifiers,
       } = organization;
 
-      let { org_id } = await OrganizationService.create({
+      let { org_id } = await Organization.create({
         company_id,
         name,
         domain_name,
@@ -30,7 +30,7 @@ module.exports.create = async (event, context, callback) => {
       const assetApiKeys = [];
 
       for await (asset of assets) {
-        const assetData = await AssetService.create({
+        const assetData = await Asset.create({
           org_id,
           ...asset,
         });
@@ -38,7 +38,7 @@ module.exports.create = async (event, context, callback) => {
       }
 
       for await (identifier of identifiers) {
-        const identifierData = await IdentifierService.create({
+        const identifierData = await Identifier.create({
           org_id,
           identifier_key: identifier,
         });

@@ -107,7 +107,7 @@ functions:
     handler: endpoints/authorizer.authorizer
 
   createWithList:
-    handler: endpoints/createWithList.create
+    handler: endpoints/createWithList.run
     memorySize: 128
     timeout: 30
     events:
@@ -115,7 +115,7 @@ functions:
           path: createWithList
           method: post
           cors: true
-          authorizer: ${self:custom.authorizer.default}
+          # authorizer: ${self:custom.authorizer.default}
           documentation:
             summary: Create a new Organization to Privally
             description: This endpoint save a  list of organizations, identifiers and assets

@@ -1,33 +1,33 @@
 #!/bin/bash
 
-  case $1 in
-	'dev')
-		AWS_KEY=$AWS_KEY_DEV
-        AWS_SECRET=$AWS_SECRET_DEV
-		;;
-	'sandbox')
-		AWS_KEY=$AWS_KEY_STAGING
-        AWS_SECRET=$AWS_SECRET_STAGING
-		;;
-	'prod')
-		AWS_KEY=$AWS_KEY_PROD
-        AWS_SECRET=$AWS_SECRET_PROD
-		break
-		;;
-  esac
+#   case $1 in
+# 	'dev')
+# 		AWS_KEY=$AWS_KEY_DEV
+#         AWS_SECRET=$AWS_SECRET_DEV
+# 		;;
+# 	'sandbox')
+# 		AWS_KEY=$AWS_KEY_STAGING
+#         AWS_SECRET=$AWS_SECRET_STAGING
+# 		;;
+# 	'prod')
+# 		AWS_KEY=$AWS_KEY_PROD
+#         AWS_SECRET=$AWS_SECRET_PROD
+# 		break
+# 		;;
+#   esac
 
 
-export AWS_KEY
-export AWS_SECRET
+# export AWS_KEY
+# export AWS_SECRET
 
-echo "KEY: $AWS_KEY"
+# echo "KEY: $AWS_KEY"
 
-aws configure --profile privally set aws_access_key_id $AWS_KEY
-aws configure --profile privally set aws_secret_access_key $AWS_SECRET
-aws configure set aws_access_key_id $AWS_KEY
-aws configure set aws_secret_access_key $AWS_SECRET
+# aws configure --profile privally set aws_access_key_id $AWS_KEY
+# aws configure --profile privally set aws_secret_access_key $AWS_SECRET
+# aws configure set aws_access_key_id $AWS_KEY
+# aws configure set aws_secret_access_key $AWS_SECRET
 
-npm install
+# npm install
 
 for p in $(cat ./services.txt)
 do
@@ -36,6 +36,7 @@ do
 
     cd $p
     npm install
-    serverless deploy --stage $1 -v
+    SLS_DEBUG=* serverless deploy --stage $1 -v
+
     cd ..
 done

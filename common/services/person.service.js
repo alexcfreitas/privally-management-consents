@@ -1,14 +1,14 @@
 "use strict";
-const { getId, getApiKey } = require("../shared/lib/encryption");
-const dynamodb = require("../shared/lib/dynamo");
+const { getId, getApiKey } = require("../lib/encryption");
+const dynamodb = require("../lib/dynamo");
 
 const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
 
 /**
- * PersonConsent CRUD Abstraction
+ * Person CRUD Abstraction
  * @Author: Alexsandro Carvalho de Freitas
  *
- * @create() - Register PersonConsent on DynamoDB
+ * @create() - Register Person on DynamoDB
  * @TODO @get() - 
  * @TODO @find() - 
  * @TODO @update() - 
@@ -24,32 +24,27 @@ const create = async (event) => {
     /**@TODO Validate Informations.*/
 
     const ORG_ID = data.org_id;
-    const PERSON_ID = data.person_id;
-    const CONSENT_ID = data.consent_id;
-    const PERSON_CONSENT_ID = getId();
+    const PERSON_ID = getId();
 
     let params = {
       TableName: DYNAMO_TABLE,
       Item: {
-        PK: `ORG#${ORG_ID}#PERS#${PERSON_ID}`,
-        SK: `ORG#${ORG_ID}#CONS#${CONSENT_ID}`,
+        PK: `ORG#${ORG_ID}`,
+        SK: `PERS#${PERSON_ID}`,
         org_id: ORG_ID,
         person_id: PERSON_ID,
-        person_consent_id: PERSON_CONSENT_ID,
-        data_key: `PERS#CONS#${PERSON_ID}`,
         created_at: new Date().getTime(),
         updated_at: new Date().getTime(),
       },
     };
-    const persConsData = await dynamodb.save(params);
+    const persData = await dynamodb.save(params);
 
     return {
-      org_id: persConsData.Item.org_id,
-      person_id: persConsData.Item.person_id,
-      person_consent_id: persConsData.Item.person_consent_id,
+      org_id: persData.Item.org_id,
+      person_id: persData.Item.person_id
     };
   } catch (error) {
-    throw new Error("PersonConsent not recorded try again");
+    throw new Error("Person not recorded try again");
   }
 };
 

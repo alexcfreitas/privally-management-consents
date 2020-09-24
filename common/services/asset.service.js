@@ -1,6 +1,6 @@
 "use strict";
-const { getId, getApiKey } = require("../shared/lib/encryption");
-const dynamodb = require("../shared/lib/dynamo");
+const { getId, getApiKey } = require("../lib/encryption");
+const dynamodb = require("../lib/dynamo");
 
 const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
 // const DYNAMO_TABLE = "table-consent-management-dev";
@@ -78,7 +78,8 @@ const findAssetByApiKey = async (event) => {
     return {...assetData.Items[0]};
 
   } catch (error) {
-    throw new Error("Asset not recorded try again");
+    console.log(error)
+    throw new Error("Asset not founded try again");
   }
 };
 
