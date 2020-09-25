@@ -95,16 +95,18 @@
         "apiId": "nbzldtje0d"
     },
     "body": {
-        "spvll": "testea-alexkkkk-testetito",
-        "identifier":{
-           "key":"cbenef",
-           "value":"unimed-401010200355487-cbenef"
-        },
-        "consent": {
-           "is_accept": true,
-           "data": {"field1":{"sub_field1":"sub_field1", "sub_field2":"sub_field2", "sub_field3":{"sub_sub_field3":"sub_sub_field3"}}, "field2":"", "field3":"", "sub_field4":{"sub_sub_field4":"sub_sub_field4"}}
+        "organization": {
+            "organizationId": 9878873,
+            "assets": [
+                {
+                    "assetId": 12323231,
+                    "url": "www.unimed-portal.com.br",
+                    "isActive": false,
+                    "isDeleted": false
+                }
+            ]
         }
-      },
+    },
     "isBase64Encoded": false
 }
 

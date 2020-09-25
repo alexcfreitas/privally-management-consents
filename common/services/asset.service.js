@@ -25,7 +25,7 @@ const create = async (event) => {
     /**@TODO Validate Informations.*/
 
     let ORG_ID = data.org_id;
-    let ASSET_ID = getId();
+    let ASSET_ID = data.asset_id;
     let API_KEY = getApiKey();
 
     let params = {
@@ -35,26 +35,57 @@ const create = async (event) => {
         SK: `ASSE#${ASSET_ID}`,
         org_id: ORG_ID,
         asset_id: ASSET_ID,
-        name: data.asset_name,
+        url: data.url,
+        is_active: data.is_active,
+        is_deleted: data.is_deleted,
         api_key: API_KEY,
         data_key: `ASSE#${API_KEY}`,
-        origin: data.asset_origin,
         created_at: new Date().getTime(),
+        updated_at: new Date().getTime(),
       },
     };
 
     const assetData = await dynamodb.save(params);
 
     return {
-      asset_id: assetData.Item.asset_id,
-      name: assetData.Item.name,
-      api_key: assetData.Item.api_key,
-      origin: assetData.Item.origin,
+      ...assetData.Item
     };
   } catch (error) {
     throw new Error("Asset not recorded try again");
   }
 };
+
+const update = async (event) => {
+  try {
+    const data = event.body ? event.body : event;
+
+    /**@TODO Validate Informations.*/
+    const PK = data.PK;
+    const SK = data.SK;
+
+    let params = {
+      TableName: DYNAMO_TABLE,
+      Key: { PK, SK},
+      UpdateExpression: "set #origin_url = :origin, is_active = :is_active, is_deleted = :is_deleted, updated_at = :updated_at",
+      ExpressionAttributeNames: {"#origin_url": "url" },
+      ExpressionAttributeValues: {
+        ":origin": data.url,
+        ":is_active": data.is_active,
+        ":is_deleted": data.is_deleted,
+        ":updated_at": new Date().getTime()
+      },
+      ReturnValues: "ALL_NEW"
+    };
+
+    const assetData = await dynamodb.update(params);
+    return {...assetData.Attributes};
+
+  } catch (error) {
+    throw new Error("Asset not updated try again");
+  }
+};
+
+
 
 const findAssetByApiKey = async (event) => {
   try {
@@ -85,6 +116,7 @@ const findAssetByApiKey = async (event) => {
 
 module.exports = {
   create,
+  update,
   findAssetByApiKey,
   // get,
   // find,

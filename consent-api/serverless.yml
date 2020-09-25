@@ -102,13 +102,13 @@ functions:
   authorizerAsset:
     handler: endpoints/authorizer.authorizer
 
-  findBySession:
-    handler: endpoints/findBySession.run
+  findByIdentifier:
+    handler: endpoints/findByIdentifier.run
     memorySize: 128
     timeout: 30
     events:
       - http:
-          path: findBySession
+          path: findByIdentifier
           method: post
           cors: true
           authorizer: ${self:custom.authorizer.default}
@@ -117,6 +117,23 @@ functions:
             description: This endpoint receive session for find consent 
             requestBody:
               description: Request body for session
+
+  insert:
+    handler: endpoints/insert.run
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: insert
+          method: post
+          cors: true
+          authorizer: ${self:custom.authorizer.default}
+          documentation:
+            summary: Insert Consent by Session to Privally
+            description: This endpoint receive session for find consent 
+            requestBody:
+              description: Request body for session
+
 
 resources:
   Resources:

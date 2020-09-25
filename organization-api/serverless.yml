@@ -122,6 +122,38 @@ functions:
             requestBody:
               description: Request body for create a new Organization
   
+  enable:
+    handler: endpoints/enable.run
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: enable
+          method: post
+          cors: true
+          # authorizer: ${self:custom.authorizer.default}
+          documentation:
+            summary: Create a new Organization to Privally
+            description: This endpoint save a  list of organizations, identifiers and assets
+            requestBody:
+              description: Request body for create a new Organization
+
+  update:
+    handler: endpoints/update.run
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: enable
+          method: put
+          cors: true
+          # authorizer: ${self:custom.authorizer.default}
+          documentation:
+            summary: Create a new Organization to Privally
+            description: This endpoint save a  list of organizations, identifiers and assets
+            requestBody:
+              description: Request body for create a new Organization
+ 
 
 resources:
   Resources:

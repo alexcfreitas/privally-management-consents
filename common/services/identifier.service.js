@@ -23,7 +23,7 @@ const create = async (event) => {
     const data = event.body ? event.body : event;
 
     let ORG_ID = data.org_id;
-    let IDENTIFIER_ID = getId();
+    let IDENTIFIER_ID = data.identifier_id;
   
     let identifierData = {
       TableName: DYNAMO_TABLE,
@@ -33,6 +33,8 @@ const create = async (event) => {
         org_id: ORG_ID,
         identifier_id: IDENTIFIER_ID,
         identifier_key: data.identifier_key,
+        is_active: data.is_active,
+        is_deleted: data.is_deleted,
         data_key: `IDEN#${data.identifier_key}`,
         created_at: new Date().getTime(),
         updated_at: new Date().getTime(),
@@ -40,15 +42,44 @@ const create = async (event) => {
     };
     let idenData =  await dynamodb.save(identifierData);
 
-    return {
-      org_id: idenData.Item.org_id,
-      identifier_id: idenData.Item.identifier_id,
-      identifier_key: idenData.Item.identifier_key
-    };
+    return {...idenData.Item};
+
   } catch (error) {
     throw new Error("Identifier not recorded try again");
   }
 };
+
+const update = async (event) => {
+  try {
+    const data = event.body ? event.body : event;
+
+    /**@TODO Validate Informations.*/
+    const PK = data.PK;
+    const SK = data.SK;
+
+    let params = {
+      TableName: DYNAMO_TABLE,
+      Key: { PK, SK},
+      UpdateExpression: "set #identifier_key = :identifier_key, is_active = :is_active, is_deleted = :is_deleted, data_key = :data_key, updated_at = :updated_at",
+      ExpressionAttributeNames: {"#identifier_key": "identifier_key" },
+      ExpressionAttributeValues: {
+        ":identifier_key": data.identifier_key,
+        ":is_active": data.is_active,
+        ":is_deleted": data.is_deleted,
+        ":data_key": data.data_key,
+        ":updated_at": new Date().getTime()
+      },
+      ReturnValues: "ALL_NEW"
+    };
+
+    const idenData = await dynamodb.update(params);
+    return {...idenData.Attributes};
+
+  } catch (error) {
+    throw new Error("Identifier not updated try again");
+  }
+};
+
 
 
 const findIdentifierByKey = async (event) => {
@@ -83,7 +114,7 @@ module.exports = {
   findIdentifierByKey,
   // get,
   // find,
-  // update,
+  update,
   // listAssetsById,
   // listIdentifiersById,
   // listPersonsById

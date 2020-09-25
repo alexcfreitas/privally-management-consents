@@ -32,7 +32,8 @@ const save = async params => {
 
 const update = async params => {
   try {
-    return await dynamodb.update(params).promise();
+    let aa = await dynamodb.update(params).promise();
+    return aa
   } catch (error) {
     console.log(
       "Unable to create item in table. Error JSON:",

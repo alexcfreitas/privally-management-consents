@@ -58,6 +58,31 @@ const create = async (event) => {
   }
 };
 
+const update = async (event) => {
+  try {
+    const data = event.body ? event.body : event;
+
+    /**@TODO Validate Informations.*/
+    const PK = data.PK;
+    const SK = data.SK;
+
+    let params = {
+      TableName: DYNAMO_TABLE,
+      Key: { PK, SK},
+      UpdateExpression: "set #spvll = :spvll, updated_at = :updated_at",
+      ExpressionAttributeNames: {"#spvll":"spvll"},
+      ExpressionAttributeValues: {
+        ":spvll": data.spvll,
+        ":updated_at": new Date().getTime()
+      }
+    };
+    return  await dynamodb.update(params);
+
+  } catch (error) {
+    throw new Error("PersonSession not updated try again");
+  }
+};
+
 const findPersonSessionByIdenValue = async (event) => {
   try {
     const data = event.body ? event.body : event;
@@ -84,12 +109,14 @@ const findPersonSessionByIdenValue = async (event) => {
   }
 };
 
+
 module.exports = {
   create,
+  update,
   findPersonSessionByIdenValue
   // get,
   // find,
-  // update,
+
   // listAssetsById,
   // listIdentifiersById,
   // listPersonsById

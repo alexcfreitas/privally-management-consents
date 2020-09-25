@@ -10,15 +10,15 @@ const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
  * @Author: Alexsandro Carvalho de Freitas
  *
  * @create() - Register Organization on DynamoDB
- * @TODO @get() - 
- * @TODO @find() - 
- * @TODO @update() - 
- * @TODO @listAssetsById() - 
- * @TODO @listIdentifiersById() - 
- * @TODO @listPersonsById() - 
+ * @TODO @get() -
+ * @TODO @find() -
+ * @TODO @update() -
+ * @TODO @listAssetsById() -
+ * @TODO @listIdentifiersById() -
+ * @TODO @listPersonsById() -
  */
 
-const create = async (event) => {
+const createWithListOld = async (event) => {
   try {
     const data = event.body ? event.body : event;
     /**@TODO Validate Informations.*/
@@ -54,9 +54,60 @@ const create = async (event) => {
   }
 };
 
+const create = async (event) => {
+  try {
+    const data = event.body ? event.body : event;
+    /**@TODO Validate Informations.*/
+
+    let ORG_ID = data.org_id;
+
+    let params = {
+      TableName: DYNAMO_TABLE,
+      Item: {
+        PK: `ORG#${ORG_ID}`,
+        SK: `#METADATA#${ORG_ID}`,
+        org_id: ORG_ID,
+        created_at: new Date().getTime(),
+        updated_at: new Date().getTime(),
+      },
+    };
+    const orgData = await dynamodb.save(params);
+
+    return {
+      org_id: orgData.Item.org_id,
+    };
+  } catch (error) {
+    throw new Error("Organization not recorded try again");
+  }
+};
+
+const get = async (event) => {
+  try {
+    const data = event.body ? event.body : event;
+    /**@TODO Validate Informations.*/
+
+    let ORG_ID = data.org_id;
+
+    let params = {
+      TableName: DYNAMO_TABLE,
+      Key: { PK: `ORG#${ORG_ID}`, SK: `#METADATA#${ORG_ID}` },
+    };
+
+    const orgData = await dynamodb.find(params);
+
+    return orgData.Item
+      ? {
+          ...orgData.Item,
+        }
+      : {};
+  } catch (error) {
+    throw new Error("Organization not enabled try again");
+  }
+};
+
 module.exports = {
   create,
-  // get,
+  get,
   // find,
   // update,
   // listAssetsById,

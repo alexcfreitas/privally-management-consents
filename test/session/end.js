@@ -8,7 +8,7 @@ const {
 } = require("common").Service;
 
 const response = require("common").Response;
-const Paylod = require("./event.json");
+const Paylod = require("../event.json");
 /**
  * Register a single Session on DynamoDB
  * This endpoint receibe a simple POST Payload like this:
@@ -29,72 +29,31 @@ const run = async (event, context, callback) => {
     const data = event.body ? event.body : event;
     const asset = event.requestContext.authorizer.asset;
     // const data = JSON.parse(body);
-
-    const personIdentifier = await PersonIdentifier.findPersonIdentifierByIdenValue(
+    const personSession = await PersonSession.findPersonSessionByIdenValue(
       {
         org_id: asset.org_id,
         person_identifier_value: data.identifier.value,
       }
     );
 
-    if (
-      Object.keys(personIdentifier).length > 0 &&
-      personIdentifier.org_id === asset.org_id
-    ) {
+    if (Object.keys(personSession).length === 0) {
       return response.json(
         callback,
         {
           result: {
             code: 4001,
-            message: `session has already been recorded`,
+            message: `session had not started`,
           },
         },
         400
       );
     }
 
-    const identifier = await Identifier.findIdentifierByKey({
-      org_id: asset.org_id,
-      identifier_key: data.identifier.key,
-    });
 
-    if (Object.keys(identifier).length === 0) {
-      return response.json(
-        callback,
-        {
-          result: {
-            code: 4001,
-            message: `identifier ${data.identifier.key} does not exist`,
-          },
-        },
-        400
-      );
-    }
-
-    // Create Person
-    const { person_id } = await Person.create({
-      org_id: asset.org_id,
-    });
-    // Create Session
-    const { session_id } = await Session.create({
-      org_id: asset.org_id,
-      spvll: data.spvll,
-    });
-    // Create Person-Identifier
-    const person_identifier = await PersonIdentifier.create({
-      org_id: asset.org_id,
-      person_id,
-      identifier_id: identifier.identifier_id,
-      person_identifier_key: data.identifier.key,
-      person_identifier_value: data.identifier.value,
-    });
-    // Create Person-Session
-    const person_session = await PersonSession.create({
-      org_id: asset.org_id,
-      person_id,
-      session_id,
-      person_identifier_key: data.identifier.key,
-      person_identifier_value: data.identifier.value,
+    // Update Person-Session
+    const person_session = await PersonSession.update({
+      PK: personSession.PK,
+      SK: personSession.SK,
       spvll: data.spvll,
     });
 
@@ -114,7 +73,7 @@ const run = async (event, context, callback) => {
       {
         result: {
           code: 5001,
-          message: "session not recorded try again",
+          message: "session not ended try again",
           error,
         },
       },

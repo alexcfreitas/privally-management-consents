@@ -1,3 +1,1 @@
 organization-api
-session-api
-consent-api
