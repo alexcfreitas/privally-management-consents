@@ -182,11 +182,17 @@ resources:
           - AttributeName: SK
             KeyType: RANGE
         GlobalSecondaryIndexes:
-          - IndexName: SK-PK-index
+          - IndexName: PK-data_key-Filter
             KeySchema:
-              - AttributeName: SK
-                KeyType: HASH
               - AttributeName: PK
+                KeyType: HASH
+              - AttributeName: data_key
                 KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: data_key-filter
+            KeySchema:
+              - AttributeName: data_key 
+                KeyType: HASH
             Projection:
               ProjectionType: ALL
