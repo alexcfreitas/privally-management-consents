@@ -1,8 +1,11 @@
-FROM node:8.10.0-alpine
+FROM node:12.18-alpine
 
 RUN npm install -g serverless
 
 WORKDIR /app/
+
+
+COPY ./common /app/common
 
 COPY ./package.json /app/package.json
 

@@ -1,0 +1,4 @@
+ENV: local
+MESSAGE: 'Local Env'
+DYNAMO_TABLE: ${self:custom.dynamo-consent-management} # Reference to Custom Env
+REGION: localhost
