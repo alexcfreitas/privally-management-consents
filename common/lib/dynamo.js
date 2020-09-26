@@ -1,7 +1,21 @@
-"use strict";
+'use strict';
 
-const AWS = require("aws-sdk");
-AWS.config.update({ region: "sa-east-1" });
+const AWS = require('aws-sdk');
+
+const dev = {
+	region: 'localhost',
+	endpoint: 'http://localhost:8000',
+	accessKeyId: 'MOCK_ACCESS_KEY_ID',
+	secretAccessKey: 'MOCK_SECRET_ACCESS_KEY',
+	convertEmptyValues: true,
+};
+
+const prod = { region: process.env.REGION || 'sa-east-1' };
+
+const config = process.env.IS_OFFLINE ? dev : prod;
+
+AWS.config.update(config);
+
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 /**
@@ -16,63 +30,64 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
  * @TODO @removeRow() - Delete a single row using Key
  */
 
-const save = async params => {
-  try {
-    await dynamodb.put(params).promise();
-    return params;
-  } catch (error) {
-    console.log(
-      "Unable to create item in table. Error JSON:",
-      JSON.stringify(error, null, 2)
-    );
-    console.log("Rejection for:", JSON.stringify(params, null, 2));
-    throw new Error();
-  }
-};
-
-const update = async params => {
-  try {
-    let aa = await dynamodb.update(params).promise();
-    return aa
-  } catch (error) {
-    console.log(
-      "Unable to create item in table. Error JSON:",
-      JSON.stringify(error, null, 2)
-    );
-    console.log("Rejection for:", JSON.stringify(params, null, 2));
-    throw new Error();
-  }
-};
-
-const find = async params => {
-  try {
-    return await dynamodb.get(params).promise();
-  } catch (error) {
-    console.log(
-      "Unable to create item in table. Error JSON:",
-      JSON.stringify(error, null, 2)
-    );
-    console.log("Rejection for:", JSON.stringify(params, null, 2));
-    throw new Error();
-  }
-};
-
-const list = async params => {
+const save = async (params) => {
 	try {
-	  return await dynamodb.query(params).promise();
+		await dynamodb.put(params).promise();
+		return params;
 	} catch (error) {
-	  console.log(
-		"Unable to create item in table. Error JSON:",
-		JSON.stringify(error, null, 2)
-	  );
-    console.log("Rejection for:", JSON.stringify(params, null, 2));
-    throw new Error();
+		console.log(
+			'Unable to create item in table. Error JSON:',
+			JSON.stringify(error, null, 2)
+		);
+		console.log('Rejection for:', JSON.stringify(params, null, 2));
+		throw new Error();
 	}
-  };
+};
+
+const update = async (params) => {
+	try {
+		let aa = await dynamodb.update(params).promise();
+		return aa;
+	} catch (error) {
+		console.log(
+			'Unable to create item in table. Error JSON:',
+			JSON.stringify(error, null, 2)
+		);
+		console.log('Rejection for:', JSON.stringify(params, null, 2));
+		throw new Error();
+	}
+};
+
+const find = async (params) => {
+	try {
+		let bb = await dynamodb.get(params).promise();
+		return bb;
+	} catch (error) {
+		console.log(
+			'Unable to create item in table. Error JSON:',
+			JSON.stringify(error, null, 2)
+		);
+		console.log('Rejection for:', JSON.stringify(params, null, 2));
+		throw new Error();
+	}
+};
+
+const list = async (params) => {
+	try {
+		return await dynamodb.query(params).promise();
+	} catch (error) {
+		console.log(
+			'Unable to create item in table. Error JSON:',
+			JSON.stringify(error, null, 2)
+		);
+		console.log('Rejection for:', JSON.stringify(params, null, 2));
+		throw new Error();
+	}
+};
 
 module.exports = {
-  save,
-  update,
-  find,
-  list
+	save,
+	update,
+	find,
+	list,
 };

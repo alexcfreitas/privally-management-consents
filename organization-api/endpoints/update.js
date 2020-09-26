@@ -1,6 +1,6 @@
-const { Asset, Identifier } = require("common").Service;
-const response = require("common").Response;
-const util = require("common").Util;
+const { Organization, Asset, Identifier } = require('common').Service;
+const response = require('common').Response;
+const util = require('common').Util;
 
 /** Enable Organizer, Asset and Identifiers  
 {
@@ -19,85 +19,144 @@ const util = require("common").Util;
 */
 
 module.exports.run = async (event, context, callback) => {
-  try {
-    const body = event.body ? event.body : event;
-    const data = JSON.parse(body);
+	try {
+		const body = event.body ? event.body : event;
+		const data = JSON.parse(body);
 
-    const { organizationId, assets, identifiers } = data.organization;
-    const identifiersCreated = [];
-    const assetApiKeys = [];
+		const { organization } = data;
 
+		const {
+			organizationId,
+			isActive,
+			isDeleted,
+			consentGroups,
+			consentTypes,
+			assets,
+			identifiers,
+		} = organization;
 
-    if(assets.length > 0) {
-      for await (let asset of assets) {
+		const assetApiKeys = [];
+		const identifiersUpdated = [];
+		const consentGroupsUpdated = [];
+		const consentTypesUpdated = [];
+		const consentGroupConsentTypeUpdated = [];
 
-        const {identifierId, url, isActive,  isDeleted } = asset;
-        
-        let isValidObject = {
-          url: url,
-          is_active: isActive,
-          is_deleted: isDeleted,
-          updated_at: new Date().getTime()
-        }
-        
-        let obj = util.getAtributesValid(isValidObject, 'url',  'is_active', 'is_deleted', 'data_key','updated_at');
+		const org_data = await Organization.update({
+			org_id: organizationId,
+			is_active: isActive,
+			is_deleted: isDeleted,
+		});
 
-        const assetData = await Asset.update({
-          PK: `ORG#${organizationId}`,
-          SK: `ASSE#${asset.assetId}`,
-          object: obj
-        });
-        assetApiKeys.push(assetData);
-      }
-    }
+		if (assets.length > 0) {
+			for await (let asset of assets) {
+				const { assetId, url, isActive, isDeleted } = asset;
 
-    if(identifiers.length > 0) {
-      for await (let iden of identifiers) {
-        const {identifierId, key, isActive,  isDeleted } = iden;
+				const assetData = await Asset.update({
+					org_id: organizationId,
+					asset_id: assetId,
+					url: url,
+					is_active: isActive,
+					is_deleted: isDeleted,
+				});
+				assetApiKeys.push(assetData);
+			}
+		}
 
-        let isValidObject = {
-          identifier_key: key,
-          is_active: isActive,
-          is_deleted: isDeleted,
-          data_key: `IDEN#${key}`,
-          updated_at: new Date().getTime()
-        }
-        
-        let obj = util.getAtributesValid(isValidObject, 'identifier_id', 'identifier_key', 'is_active', 'is_deleted', 'data_key','updated_at');
+		if (identifiers.length > 0) {
+			for await (let iden of identifiers) {
+				const { identifierId, key, isActive, isDeleted } = iden;
 
-        const identifierData = await Identifier.update({
-          PK: `ORG#${organizationId}`,
-          SK: `IDEN#${identifierId}`,
-          object: obj
-        });
-        identifiersCreated.push(identifierData);
-      }
-    }
+				const identifierData = await Identifier.update({
+					org_id: organizationId,
+					identifier_key: identifierId,
+					identifier_key: key,
+					is_active: isActive,
+					is_deleted: isDeleted,
+				});
+				identifiersUpdated.push(identifierData);
+			}
+		}
 
-    return response.json(
-      callback,
-      {
-        result: {
-          code: 2001,
-          message: "Organizations, Assets and Identifiers successfully updated",
-          organization: { org_id: organizationId, assets: assetApiKeys, identifiers: identifiersCreated },
-        },
-      },
-      200
-    );
-  } catch (error) {
-    return response.json(
-      callback,
-      {
-        result: {
-          code: 5001,
-          message: error.message
-            ? error.message
-            : "Organizations, Assets and Identifiers not recorded try again ",
-          error,
-        },
-      },
-      500
-    );
-  }
+		if (consentGroups.length > 0) {
+			for await (let consentGroup of consentGroups) {
+				const {
+					consentGroupId,
+					description,
+					isActive,
+					isDeleted,
+					consentTypes,
+				} = consentGroup;
+				let _consentTypes = consentTypes;
+				for await (let _consentType of _consentTypes) {
+					const { consentTypeId, consentGroupConsentTypeId } = _consentType;
+					const consentGroupConsentTypeData = await ConsentGroupConsentType.update(
+						{
+							org_id: organizationId,
+							cons_group_cons_type_id: consentGroupConsentTypeId,
+							consent_group_id: consentGroupId,
+							consent_type_id: consentTypeId,
+						}
+					);
+					consentGroupConsentTypeUpdated.push(consentGroupConsentTypeData);
+				}
+
+				const consentGroupData = await ConsentGroup.update({
+					org_id: organizationId,
+					consent_group_id: consentGroupId,
+					description,
+					consent_types: consentGroupConsentTypeUpdated,
+					is_active: isActive,
+					is_deleted: isDeleted,
+				});
+				consentGroupsUpdated.push(consentGroupData);
+			}
+		}
+
+		if (consentTypes.length > 0) {
+			for await (let consentType of consentTypes) {
+				const { consentTypeId, description, isActive, isDeleted } = consentType;
+				const consentTypeData = await ConsentType.update({
+					org_id: organizationId,
+					consent_type_id: consentTypeId,
+					description,
+					is_active: isActive,
+					is_deleted: isDeleted,
+				});
+				consentTypesUpdated.push(consentTypeData);
+			}
+		}
+
+		return response.json(
+			callback,
+			{
+				result: {
+					code: 2001,
+					message:
+						'Organizations, Assets, Identifiers, ConsentGroups and ConsentTypes successfully updated',
+					organization: {
+						org_id: organizationId,
+						assets: assetApiKeys,
+						identifiers: identifiersUpdated,
+						consent_groups: consentGroupsUpdated,
+						consent_types: consentTypesUpdated,
+					},
+				},
+			},
+			200
+		);
+	} catch (error) {
+		return response.json(
+			callback,
+			{
+				result: {
+					code: 5001,
+					message: error.message
+						? error.message
+						: 'Organizations, Assets and Identifiers not recorded try again ',
+					error,
+				},
+			},
+			500
+		);
+	}
 };

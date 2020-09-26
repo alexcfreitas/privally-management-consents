@@ -4,7 +4,8 @@
 	"description": "API of session token information",
 	"scripts": {
 		"docker": "docker-compose up --force-recreate",
-		"dev": "npm install; serverless offline start --stage dev",
+		"start": "SLS_DEBUG=* serverless offline start --stage local",
+		"dev": "npm install; SLS_DEBUG=* serverless offline start --stage local",
 		"runDev": "cross-env DYNAMO_TABLE=table-consent-management-dev node ./test/start.js",
 		"runFindByIdentifier": "cross-env DYNAMO_TABLE=table-consent-management-dev node ./test/findBySession.js",
 		"runSaveConsent": "cross-env DYNAMO_TABLE=table-consent-management-dev node ./test/saveConsent.js",

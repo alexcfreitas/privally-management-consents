@@ -19,10 +19,10 @@ provider:
 
   environment: #Global Environment variables
     ${file(../configs/${self:provider.stage}.yml)}
-  
+
   iamRoleStatements: # Permissions for all of your functions can be set here
     - Effect: Allow
-      Action: 
+      Action:
         - dynamodb:DescribeTable
         - dynamodb:Query
         - dynamodb:Scan
@@ -31,9 +31,6 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: 'arn:aws:dynamodb:*:*:*'
-
-
-
 
 custom:
   region: ${self:provider.region}
@@ -91,8 +88,6 @@ custom:
     apiType: rest
     autoDomain: false
 
-
-
 plugins:
   - serverless-offline
   - serverless-reqvalidator-plugin
@@ -101,27 +96,10 @@ plugins:
   - serverless-dynamodb-local
   - serverless-offline
 
-
 functions:
   authorizerAsset:
     handler: endpoints/authorizer.authorizer
 
-  createWithList:
-    handler: endpoints/createWithList.run
-    memorySize: 128
-    timeout: 30
-    events:
-      - http:
-          path: createWithList
-          method: post
-          cors: true
-          # authorizer: ${self:custom.authorizer.default}
-          documentation:
-            summary: Create a new Organization to Privally
-            description: This endpoint save a  list of organizations, identifiers and assets
-            requestBody:
-              description: Request body for create a new Organization
-  
   enable:
     handler: endpoints/enable.run
     memorySize: 128
@@ -153,7 +131,6 @@ functions:
             description: This endpoint save a  list of organizations, identifiers and assets
             requestBody:
               description: Request body for create a new Organization
- 
 
 resources:
   Resources:
@@ -166,33 +143,35 @@ resources:
         ValidateRequestBody: true
         ValidateRequestParameters: true
 
-    # sessionTable:
-    #   Type: AWS::DynamoDB::Table
-    #   Properties:
-    #     TableName: ${self:custom.dynamo-consent-management}
-    #     AttributeDefinitions:
-    #       - AttributeName: PK
-    #         AttributeType: S
-    #       - AttributeName: SK
-    #         AttributeType: S
-    #     BillingMode: PAY_PER_REQUEST
-    #     KeySchema:
-    #       - AttributeName: PK
-    #         KeyType: HASH
-    #       - AttributeName: SK
-    #         KeyType: RANGE
-    #     GlobalSecondaryIndexes:
-    #       - IndexName: PK-data_key-Filter
-    #         KeySchema:
-    #           - AttributeName: PK
-    #             KeyType: HASH
-    #           - AttributeName: data_key
-    #             KeyType: RANGE
-    #         Projection:
-    #           ProjectionType: ALL
-    #       - IndexName: data_key-filter
-    #         KeySchema:
-    #           - AttributeName: data_key 
-    #             KeyType: HASH
-    #         Projection:
-    #           ProjectionType: ALL
+    consentManagementTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.dynamo-consent-management}
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: data_key
+            AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: PK-data_key-Filter
+            KeySchema:
+              - AttributeName: PK
+                KeyType: HASH
+              - AttributeName: data_key
+                KeyType: S
+            Projection:
+              ProjectionType: ALL
+          - IndexName: data_key-filter
+            KeySchema:
+              - AttributeName: data_key
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL

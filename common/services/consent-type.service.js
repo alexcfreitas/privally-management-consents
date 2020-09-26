@@ -3,13 +3,12 @@ const { getId, getApiKey } = require('../lib/encryption');
 const dynamodb = require('../lib/dynamo');
 const util = require('../lib/util');
 const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
-// const DYNAMO_TABLE = "table-consent-management-dev";
 
 /**
- * Asset CRUD Abstraction
+ * Consent CRUD Abstraction
  * @Author: Alexsandro Carvalho de Freitas
  *
- * @create() - Register Asset on DynamoDB
+ * @create() - Register Consent on DynamoDB
  * @TODO @get() -
  * @TODO @find() -
  * @TODO @update() -
@@ -17,53 +16,45 @@ const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
  * @TODO @listIdentifiersById() -
  * @TODO @listPersonsById() -
  */
-
 const create = async (event) => {
 	try {
 		const data = event.body ? event.body : event;
 
-		/**@TODO Validate Informations.*/
-
-		let API_KEY = getApiKey();
-		let {
+		const {
 			org_id,
-			asset_id,
-			url,
+			consent_type_id,
+			description,
 			is_active,
 			is_deleted,
 		} = util.getValidAtributes(
 			data,
 			'org_id',
-			'asset_id',
-			'url',
+			'consent_type_id',
+			'description',
 			'is_active',
 			'is_deleted'
 		);
 
-		let params = {
+		let consentTypeData = {
 			TableName: DYNAMO_TABLE,
 			Item: {
 				PK: `ORG#${org_id}`,
-				SK: `ASSE#${asset_id}`,
+				SK: `CONS#TYPE#${consent_type_id}`,
 				org_id,
-				asset_id,
-				url,
+				consent_type_id,
+				description,
 				is_active,
 				is_deleted,
-				api_key: API_KEY,
-				data_key: `ASSE#${API_KEY}`,
+				data_key: `CONS#TYPE#${org_id}`,
 				created_at: new Date().getTime(),
 				updated_at: new Date().getTime(),
 			},
 		};
+		let consTypeData = await dynamodb.save(consentTypeData);
 
-		const assetData = await dynamodb.save(params);
-
-		return {
-			...assetData.Item,
-		};
+		return { ...consTypeData.Item };
 	} catch (error) {
-		throw new Error('Asset not recorded try again');
+		throw new Error('Consent Group  not recorded try again');
 	}
 };
 
@@ -75,74 +66,47 @@ const update = async (event) => {
 
 		const {
 			org_id,
-			asset_id,
-			url,
+			consent_type_id,
+			description,
 			is_active,
 			is_deleted,
 		} = util.getValidAtributes(
 			data,
 			'org_id',
-			'asset_id',
-			'url',
+			'consent_type_id',
+			'description',
 			'is_active',
 			'is_deleted'
 		);
 		const expression = util.generateUpdateQuery({
 			org_id,
-			asset_id,
-			url,
+			consent_type_id,
+			description,
 			is_active,
 			is_deleted,
+			data_key: `CONS#TYPE#${org_id}`,
 			updated_at: new Date().getTime(),
 		});
 
 		let params = {
 			TableName: DYNAMO_TABLE,
-			Key: { PK: `ORG#${org_id}`, SK: `ASSE#${asset_id}` },
+			Key: { PK: `ORG#${org_id}`, SK: `CONS#TYPE#${consent_type_id}` },
 			...expression,
 			ReturnValues: 'ALL_NEW',
 		};
 
-		const assetData = await dynamodb.update(params);
-		return { ...assetData.Attributes };
+		const consTypeData = await dynamodb.update(params);
+		return { ...consTypeData.Attributes };
 	} catch (error) {
-		throw new Error('Asset not updated try again');
-	}
-};
-
-const findAssetByApiKey = async (event) => {
-	try {
-		const data = event.body ? event.body : event;
-
-		/**@TODO Validate Informations.*/
-
-		const API_KEY = data.api_key;
-
-		let params = {
-			TableName: DYNAMO_TABLE,
-			IndexName: 'data_key-filter',
-			KeyConditionExpression: '#data_key = :data_key',
-			ExpressionAttributeNames: { '#data_key': 'data_key' },
-			ExpressionAttributeValues: {
-				':data_key': `ASSE#${API_KEY}`,
-			},
-		};
-
-		const assetData = await dynamodb.list(params);
-		return { ...assetData.Items[0] };
-	} catch (error) {
-		console.log(error);
-		throw new Error('Asset not founded try again');
+		throw new Error('Consent Type not updated try again');
 	}
 };
 
 module.exports = {
 	create,
-	update,
-	findAssetByApiKey,
 	// get,
 	// find,
-	// update,
+	update,
 	// listAssetsById,
 	// listIdentifiersById,
 	// listPersonsById
