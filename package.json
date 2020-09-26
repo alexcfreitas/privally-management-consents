@@ -4,7 +4,7 @@
 	"description": "API of session token information",
 	"scripts": {
 		"docker": "docker-compose up --force-recreate",
-		"dev": "npm install; serverless offline start --stage local",
+		"dev": "npm install; serverless offline start --stage dev",
 		"runDev": "cross-env DYNAMO_TABLE=table-consent-management-dev node ./test/start.js",
 		"runFindByIdentifier": "cross-env DYNAMO_TABLE=table-consent-management-dev node ./test/findBySession.js",
 		"runSaveConsent": "cross-env DYNAMO_TABLE=table-consent-management-dev node ./test/saveConsent.js",
@@ -23,13 +23,15 @@
 		"serverless-dynamodb-local": "0.2.38",
 		"serverless-offline": "^4.10.6",
 		"serverless-offline-scheduler": "^0.3.8",
-		"serverless-offline-sqs-esmq": "^1.0.0",
+		"serverless-offline-sqs-esmq": "1.0.0",
 		"serverless-plugin-split-stacks": "^1.9.2"
 	},
 	"dependencies": {
 		"common": "file:./common",
 		"lodash": "4.17.20",
-		"serverless-pseudo-parameters": "^1.6.0",
+		"serverless-aws-documentation": "1.1.0",
+		"serverless-domain-manager": "5.0.0",
+		"serverless-pseudo-parameters": "1.6.0",
 		"serverless-reqvalidator-plugin": "1.0.3"
 	}
 }

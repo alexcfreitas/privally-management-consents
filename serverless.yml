@@ -18,7 +18,7 @@ provider:
       - .test/**
 
   environment: #Global Environment variables
-    ${file(../configs/${self:provider.stage}.yml)}
+    ${file(./configs/${self:provider.stage}.yml)}
 
   iamRoleStatements: # Permissions for all of your functions can be set here
     - Effect: Allow
@@ -40,6 +40,9 @@ custom:
   sns-logs: ${self:custom.prefix}-trigger-logs
   sqs-logs: ${self:custom.prefix}-messages-logs
   stageTargets:
+    local:
+      domain: dev-sandbox.api.privally.ws
+      certificate: 'arn:aws:acm:sa-east-1:772000878796:certificate/0dfc4a90-633b-485c-a54c-41b16889b283'
     dev:
       domain: dev-sandbox.api.privally.ws
       certificate: 'arn:aws:acm:sa-east-1:772000878796:certificate/0dfc4a90-633b-485c-a54c-41b16889b283'
@@ -94,29 +97,29 @@ custom:
   serverless-offline:
     host: '0.0.0.0'
 
-  splitStacks:
-    perFunction: true
-    perType: true
+  # splitStacks:
+  #   perFunction: true
+  #   perType: true
 
-  serverless-offline-sqs-esmq:
-    apiVersion: '2012-11-05'
-    endpoint: http://sqs:9324
-    region: sa-east-1
-    accessKeyId: root
-    secretAccessKey: root
+  # serverless-offline-sqs-esmq:
+  #   apiVersion: '2012-11-05'
+  #   endpoint: http://sqs:9324
+  #   region: sa-east-1
+  #   accessKeyId: root
+  #   secretAccessKey: root
 
-  dynamodb:
-    stages:
-      - local
-      - sandbox
-      - dev
+  # dynamodb:
+  #   stages:
+  #     - local
+  #     - sandbox
+  #     - dev
 
-    start:
-      host: 'dynamo'
-      port: 8000
-      inMemory: false
-      migrate: true
-      noStart: true
+  #   start:
+  #     host: 'dynamo'
+  #     port: 8000
+  #     inMemory: false
+  #     migrate: true
+  #     noStart: true
 
 plugins:
   - serverless-offline
@@ -125,7 +128,7 @@ plugins:
   - serverless-domain-manager
   - serverless-pseudo-parameters
   - serverless-dynamodb-local
-  - serverless-offline-sqs-esmq
+  # - serverless-offline-sqs-esmq
 
 functions:
   authorizerAsset:
