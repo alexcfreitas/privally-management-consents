@@ -3,6 +3,7 @@ module.exports.Auth = require("./lib/auth");
 module.exports.Dynamo = require("./lib/dynamo");
 module.exports.Encryption = require("./lib/encryption");
 module.exports.Response = require("./lib/response");
+module.exports.Util = require("./lib/util");
 
 module.exports.Service = {
   Asset: require("./services/asset.service"),
@@ -15,3 +16,4 @@ module.exports.Service = {
   PersonConsent: require("./services/person-consent.service"),
   PersonSession: require("./services/person-session.service"),
 };
+

@@ -53,6 +53,7 @@
 	},
 	"dependencies": {
 		"common": "file:./common",
+		"lodash": "4.17.20",
 		"serverless-pseudo-parameters": "^1.6.0",
 		"serverless-reqvalidator-plugin": "1.0.3"
 	}

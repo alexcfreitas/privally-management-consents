@@ -96,17 +96,19 @@
     },
     "body": {
         "organization": {
-            "organizationId": 9878873,
+            "organizationId": "10",
             "assets": [
                 {
-                    "assetId": 12323231,
-                    "url": "www.unimed-portal.com.br",
-                    "isActive": false,
+                    "assetId": "782",
+                    "url": "www.posssrtalunimevvvcd24e.com.br",
+                    "isActive": true,
                     "isDeleted": false
                 }
             ]
         }
-    },
+    }
+    
+    ,
     "isBase64Encoded": false
 }
 

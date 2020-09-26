@@ -1,7 +1,7 @@
 "use strict";
 const { getId, getApiKey } = require("../lib/encryption");
 const dynamodb = require("../lib/dynamo");
-
+const util = require("../lib/util");
 const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
 // const DYNAMO_TABLE = "table-consent-management-dev";
 
@@ -63,20 +63,16 @@ const update = async (event) => {
     const PK = data.PK;
     const SK = data.SK;
 
+    let expression = util.generateUpdateQuery(data.object)
+
     let params = {
       TableName: DYNAMO_TABLE,
       Key: { PK, SK},
-      UpdateExpression: "set #origin_url = :origin, is_active = :is_active, is_deleted = :is_deleted, updated_at = :updated_at",
-      ExpressionAttributeNames: {"#origin_url": "url" },
-      ExpressionAttributeValues: {
-        ":origin": data.url,
-        ":is_active": data.is_active,
-        ":is_deleted": data.is_deleted,
-        ":updated_at": new Date().getTime()
-      },
+      ...expression,
       ReturnValues: "ALL_NEW"
     };
-
+    console.log("expression for:", JSON.stringify(expression, null, 2));
+    console.log("Rejection for:", JSON.stringify(params, null, 2));
     const assetData = await dynamodb.update(params);
     return {...assetData.Attributes};
 
@@ -84,7 +80,6 @@ const update = async (event) => {
     throw new Error("Asset not updated try again");
   }
 };
-
 
 
 const findAssetByApiKey = async (event) => {

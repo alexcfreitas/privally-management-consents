@@ -166,33 +166,33 @@ resources:
         ValidateRequestBody: true
         ValidateRequestParameters: true
 
-    sessionTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:custom.dynamo-consent-management}
-        AttributeDefinitions:
-          - AttributeName: PK
-            AttributeType: S
-          - AttributeName: SK
-            AttributeType: S
-        BillingMode: PAY_PER_REQUEST
-        KeySchema:
-          - AttributeName: PK
-            KeyType: HASH
-          - AttributeName: SK
-            KeyType: RANGE
-        GlobalSecondaryIndexes:
-          - IndexName: PK-data_key-Filter
-            KeySchema:
-              - AttributeName: PK
-                KeyType: HASH
-              - AttributeName: data_key
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-          - IndexName: data_key-filter
-            KeySchema:
-              - AttributeName: data_key 
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
+    # sessionTable:
+    #   Type: AWS::DynamoDB::Table
+    #   Properties:
+    #     TableName: ${self:custom.dynamo-consent-management}
+    #     AttributeDefinitions:
+    #       - AttributeName: PK
+    #         AttributeType: S
+    #       - AttributeName: SK
+    #         AttributeType: S
+    #     BillingMode: PAY_PER_REQUEST
+    #     KeySchema:
+    #       - AttributeName: PK
+    #         KeyType: HASH
+    #       - AttributeName: SK
+    #         KeyType: RANGE
+    #     GlobalSecondaryIndexes:
+    #       - IndexName: PK-data_key-Filter
+    #         KeySchema:
+    #           - AttributeName: PK
+    #             KeyType: HASH
+    #           - AttributeName: data_key
+    #             KeyType: RANGE
+    #         Projection:
+    #           ProjectionType: ALL
+    #       - IndexName: data_key-filter
+    #         KeySchema:
+    #           - AttributeName: data_key 
+    #             KeyType: HASH
+    #         Projection:
+    #           ProjectionType: ALL

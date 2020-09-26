@@ -7,7 +7,7 @@ const {
   PersonSession,
   Asset,
 } = require("common").Service;
-
+const util = require("common").Util;
 const response = require("common").Response;
 const Paylod = require("./eventUpdateOrganization.json");
 /**
@@ -30,39 +30,68 @@ const run = async (event, context, callback) => {
     const data = event.body ? event.body : event;
     const asset = event.requestContext.authorizer.asset;
     // const data = JSON.parse(body);
-
-    const {organizationId, assets } = data.organization;
-    const responseData = [];
+    const { organizationId, assets, identifiers } = data.organization;
+    const identifiersCreated = [];
     const assetApiKeys = [];
 
-    for await (let asset of assets) {
-      const assetData = await Asset.update({
-        PK: `ORG#${organizationId}`,
-        SK: `ASSE#${asset.assetId}`,
-        org_id: organizationId,
-        asset_id: asset.assetId,
-        url: asset.url,
-        is_active: asset.isActive,
-        is_deleted: asset.isDeleted
-      });
-      assetApiKeys.push(assetData);
+    if(assets.length > 0) {
+      for await (let asset of assets) {
+
+        const {identifierId, url, isActive,  isDeleted } = asset;
+        
+        let isValidObject = {
+          url: url,
+          is_active: isActive,
+          is_deleted: isDeleted,
+          updated_at: new Date().getTime()
+        }
+        
+        let obj = util.getAtributesValid(isValidObject, 'url',  'is_active', 'is_deleted', 'data_key','updated_at');
+
+        const assetData = await Asset.update({
+          PK: `ORG#${organizationId}`,
+          SK: `ASSE#${asset.assetId}`,
+          org_id: organizationId,
+          asset_id: asset.assetId,
+          url: asset.url,
+          is_active: asset.isActive,
+          is_deleted: asset.isDeleted,
+          updated_at: new Date().getTime()
+        });
+        assetApiKeys.push(assetData);
+      }
     }
 
-    responseData.push({
-      org_id: organizationId,
-      assets: assetApiKeys,
-    });
+    if(identifiers.length > 0) {
+      for await (let iden of identifiers) {
+        const {identifierId, key, isActive,  isDeleted } = iden;
 
-    console.log("RESPONSE DATA  --> ", JSON.stringify(responseData, null, 2));
+        let isValidObject = {
+          identifier_key: key,
+          is_active: isActive,
+          is_deleted: isDeleted,
+          data_key: `IDEN#${key}`,
+          updated_at: new Date().getTime()
+        }
+        
+        let obj = util.getAtributesValid(isValidObject, 'identifier_id', 'identifier_key', 'is_active', 'is_deleted', 'data_key','updated_at');
+
+        const identifierData = await Identifier.update({
+          PK: `ORG#${organizationId}`,
+          SK: `IDEN#${identifierId}`,
+          object: obj
+        });
+        identifiersCreated.push(identifierData);
+      }
+    }
 
     return response.json(
       callback,
       {
         result: {
           code: 2001,
-          message:
-            "Asset successfully updated",
-          organization: responseData,
+          message: "Organizations, Assets and Identifiers successfully updated",
+          organization: { org_id: organizationId, assets: assetApiKeys, identifiers: identifiersCreated },
         },
       },
       200

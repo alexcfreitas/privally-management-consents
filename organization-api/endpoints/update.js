@@ -1,5 +1,6 @@
 const { Asset, Identifier } = require("common").Service;
 const response = require("common").Response;
+const util = require("common").Util;
 
 /** Enable Organizer, Asset and Identifiers  
 {
@@ -26,30 +27,51 @@ module.exports.run = async (event, context, callback) => {
     const identifiersCreated = [];
     const assetApiKeys = [];
 
-    for await (let asset of assets) {
-      const assetData = await Asset.update({
-        PK: `ORG#${organizationId}`,
-        SK: `ASSE#${asset.assetId}`,
-        org_id: organizationId,
-        asset_id: asset.assetId,
-        url: asset.url,
-        is_active: asset.isActive,
-        is_deleted: asset.isDeleted,
-      });
-      assetApiKeys.push(assetData);
+
+    if(assets.length > 0) {
+      for await (let asset of assets) {
+
+        const {identifierId, url, isActive,  isDeleted } = asset;
+        
+        let isValidObject = {
+          url: url,
+          is_active: isActive,
+          is_deleted: isDeleted,
+          updated_at: new Date().getTime()
+        }
+        
+        let obj = util.getAtributesValid(isValidObject, 'url',  'is_active', 'is_deleted', 'data_key','updated_at');
+
+        const assetData = await Asset.update({
+          PK: `ORG#${organizationId}`,
+          SK: `ASSE#${asset.assetId}`,
+          object: obj
+        });
+        assetApiKeys.push(assetData);
+      }
     }
 
-    for await (let iden of identifiers) {
-      const identifierData = await Identifier.update({
-        PK: `ORG#${organizationId}`,
-        SK: `IDEN#${iden.identifierId}`,
-        identifier_id: iden.identifierId,
-        identifier_key: iden.key,
-        is_active: iden.isActive,
-        is_deleted: iden.isDeleted,
-        data_key: `IDEN#${iden.key}`,
-      });
-      identifiersCreated.push(identifierData);
+    if(identifiers.length > 0) {
+      for await (let iden of identifiers) {
+        const {identifierId, key, isActive,  isDeleted } = iden;
+
+        let isValidObject = {
+          identifier_key: key,
+          is_active: isActive,
+          is_deleted: isDeleted,
+          data_key: `IDEN#${key}`,
+          updated_at: new Date().getTime()
+        }
+        
+        let obj = util.getAtributesValid(isValidObject, 'identifier_id', 'identifier_key', 'is_active', 'is_deleted', 'data_key','updated_at');
+
+        const identifierData = await Identifier.update({
+          PK: `ORG#${organizationId}`,
+          SK: `IDEN#${identifierId}`,
+          object: obj
+        });
+        identifiersCreated.push(identifierData);
+      }
     }
 
     return response.json(

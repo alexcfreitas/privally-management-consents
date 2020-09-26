@@ -1,6 +1,7 @@
 "use strict";
 const { getId, getApiKey } = require("../lib/encryption");
 const dynamodb = require("../lib/dynamo");
+const util = require("../lib/util");
 
 const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
 // const DYNAMO_TABLE = "test-privacy-apis-ERD";
@@ -56,19 +57,11 @@ const update = async (event) => {
     /**@TODO Validate Informations.*/
     const PK = data.PK;
     const SK = data.SK;
-
+    let expression = util.generateUpdateQuery(data.object)
     let params = {
       TableName: DYNAMO_TABLE,
       Key: { PK, SK},
-      UpdateExpression: "set #identifier_key = :identifier_key, is_active = :is_active, is_deleted = :is_deleted, data_key = :data_key, updated_at = :updated_at",
-      ExpressionAttributeNames: {"#identifier_key": "identifier_key" },
-      ExpressionAttributeValues: {
-        ":identifier_key": data.identifier_key,
-        ":is_active": data.is_active,
-        ":is_deleted": data.is_deleted,
-        ":data_key": data.data_key,
-        ":updated_at": new Date().getTime()
-      },
+      ...expression,
       ReturnValues: "ALL_NEW"
     };
 
