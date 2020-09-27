@@ -1,6 +1,5 @@
 'use strict';
-
-const _ = require('lodash');
+const moment = require('moment-timezone');
 
 const generateUpdateQuery = (fields) => {
 	let exp = {
@@ -17,14 +16,13 @@ const generateUpdateQuery = (fields) => {
 	return exp;
 };
 
-const getValidAtributes = (data, ...atributesPossibles) => {
-	return _.chain(data)
-		.pick([...atributesPossibles])
-		.pickBy(_.identity)
-		.value();
+const getDateFormated = () => {
+	return moment
+		.tz(new Date(), 'America/Sao_Paulo')
+		.format('YYYY-MM-DD HH:mm:ss');
 };
 
 module.exports = {
 	generateUpdateQuery,
-	getValidAtributes,
+	getDateFormated,
 };

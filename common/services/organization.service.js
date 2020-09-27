@@ -23,12 +23,7 @@ const create = async (event) => {
 		const data = event.body ? event.body : event;
 		/**@TODO Validate Informations.*/
 
-		const { org_id, is_active, is_deleted } = util.getValidAtributes(
-			data,
-			'org_id',
-			'is_active',
-			'is_deleted'
-		);
+		const { org_id, is_active, is_deleted } = data;
 		let params = {
 			TableName: DYNAMO_TABLE,
 			Item: {
@@ -38,8 +33,8 @@ const create = async (event) => {
 				is_active,
 				is_deleted,
 				data_key: `ORG#${org_id}`,
-				created_at: new Date().getTime(),
-				updated_at: new Date().getTime(),
+				created_at: util.getDateFormated(),
+				updated_at: util.getDateFormated(),
 			},
 		};
 		const orgData = await dynamodb.save(params);
@@ -80,18 +75,14 @@ const update = async (event) => {
 
 		/**@TODO Validate Informations.*/
 
-		const { org_id, is_active, is_deleted } = util.getValidAtributes(
-			data,
-			'org_id',
-			'is_active',
-			'is_deleted'
-		);
+		const { org_id, is_active, is_deleted } = data;
+
 		const expression = util.generateUpdateQuery({
 			org_id,
 			is_active,
 			is_deleted,
 			data_key: `ORG#${org_id}`,
-			updated_at: new Date().getTime(),
+			updated_at: util.getDateFormated(),
 		});
 
 		let params = {

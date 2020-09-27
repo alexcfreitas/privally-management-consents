@@ -29,17 +29,12 @@ module.exports.run = async (event, context, callback) => {
 			organizationId,
 			isActive,
 			isDeleted,
-			consentGroups,
-			consentTypes,
 			assets,
 			identifiers,
 		} = organization;
 
 		const assetApiKeys = [];
 		const identifiersUpdated = [];
-		const consentGroupsUpdated = [];
-		const consentTypesUpdated = [];
-		const consentGroupConsentTypeUpdated = [];
 
 		const org_data = await Organization.update({
 			org_id: organizationId,
@@ -54,7 +49,7 @@ module.exports.run = async (event, context, callback) => {
 				const assetData = await Asset.update({
 					org_id: organizationId,
 					asset_id: assetId,
-					url: url,
+					url: url ? url : '',
 					is_active: isActive,
 					is_deleted: isDeleted,
 				});
@@ -77,55 +72,6 @@ module.exports.run = async (event, context, callback) => {
 			}
 		}
 
-		if (consentGroups.length > 0) {
-			for await (let consentGroup of consentGroups) {
-				const {
-					consentGroupId,
-					description,
-					isActive,
-					isDeleted,
-					consentTypes,
-				} = consentGroup;
-				let _consentTypes = consentTypes;
-				for await (let _consentType of _consentTypes) {
-					const { consentTypeId, consentGroupConsentTypeId } = _consentType;
-					const consentGroupConsentTypeData = await ConsentGroupConsentType.update(
-						{
-							org_id: organizationId,
-							cons_group_cons_type_id: consentGroupConsentTypeId,
-							consent_group_id: consentGroupId,
-							consent_type_id: consentTypeId,
-						}
-					);
-					consentGroupConsentTypeUpdated.push(consentGroupConsentTypeData);
-				}
-
-				const consentGroupData = await ConsentGroup.update({
-					org_id: organizationId,
-					consent_group_id: consentGroupId,
-					description,
-					consent_types: consentGroupConsentTypeUpdated,
-					is_active: isActive,
-					is_deleted: isDeleted,
-				});
-				consentGroupsUpdated.push(consentGroupData);
-			}
-		}
-
-		if (consentTypes.length > 0) {
-			for await (let consentType of consentTypes) {
-				const { consentTypeId, description, isActive, isDeleted } = consentType;
-				const consentTypeData = await ConsentType.update({
-					org_id: organizationId,
-					consent_type_id: consentTypeId,
-					description,
-					is_active: isActive,
-					is_deleted: isDeleted,
-				});
-				consentTypesUpdated.push(consentTypeData);
-			}
-		}
-
 		return response.json(
 			callback,
 			{
@@ -137,8 +83,6 @@ module.exports.run = async (event, context, callback) => {
 						org_id: organizationId,
 						assets: assetApiKeys,
 						identifiers: identifiersUpdated,
-						consent_groups: consentGroupsUpdated,
-						consent_types: consentTypesUpdated,
 					},
 				},
 			},

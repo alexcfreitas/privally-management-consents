@@ -25,20 +25,7 @@ const create = async (event) => {
 		/**@TODO Validate Informations.*/
 
 		let API_KEY = getApiKey();
-		let {
-			org_id,
-			asset_id,
-			url,
-			is_active,
-			is_deleted,
-		} = util.getValidAtributes(
-			data,
-			'org_id',
-			'asset_id',
-			'url',
-			'is_active',
-			'is_deleted'
-		);
+		const { org_id, asset_id, url, is_active, is_deleted } = data;
 
 		let params = {
 			TableName: DYNAMO_TABLE,
@@ -52,8 +39,8 @@ const create = async (event) => {
 				is_deleted,
 				api_key: API_KEY,
 				data_key: `ASSE#${API_KEY}`,
-				created_at: new Date().getTime(),
-				updated_at: new Date().getTime(),
+				created_at: util.getDateFormated(),
+				updated_at: util.getDateFormated(),
 			},
 		};
 
@@ -73,27 +60,15 @@ const update = async (event) => {
 
 		/**@TODO Validate Informations.*/
 
-		const {
-			org_id,
-			asset_id,
-			url,
-			is_active,
-			is_deleted,
-		} = util.getValidAtributes(
-			data,
-			'org_id',
-			'asset_id',
-			'url',
-			'is_active',
-			'is_deleted'
-		);
+		const { org_id, asset_id, url, is_active, is_deleted } = data;
+
 		const expression = util.generateUpdateQuery({
 			org_id,
 			asset_id,
 			url,
 			is_active,
 			is_deleted,
-			updated_at: new Date().getTime(),
+			updated_at: util.getDateFormated(),
 		});
 
 		let params = {

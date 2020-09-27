@@ -1,7 +1,7 @@
-"use strict";
-const { getId, getApiKey } = require("../lib/encryption");
-const dynamodb = require("../lib/dynamo");
-
+'use strict';
+const { getId, getApiKey } = require('../lib/encryption');
+const dynamodb = require('../lib/dynamo');
+const util = require('../lib/util');
 const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
 
 /**
@@ -9,55 +9,55 @@ const DYNAMO_TABLE = process.env.DYNAMO_TABLE;
  * @Author: Alexsandro Carvalho de Freitas
  *
  * @create() - Register Consent on DynamoDB
- * @TODO @get() - 
- * @TODO @find() - 
- * @TODO @update() - 
- * @TODO @listAssetsById() - 
- * @TODO @listIdentifiersById() - 
- * @TODO @listPersonsById() - 
+ * @TODO @get() -
+ * @TODO @find() -
+ * @TODO @update() -
+ * @TODO @listAssetsById() -
+ * @TODO @listIdentifiersById() -
+ * @TODO @listPersonsById() -
  */
 
 const create = async (event) => {
-  try {
-    const data = event.body ? event.body : event;
-    // const data = JSON.parse(body);
-    /**@TODO Validate Informations.*/
+	try {
+		const data = event.body ? event.body : event;
+		// const data = JSON.parse(body);
+		/**@TODO Validate Informations.*/
 
-    const ORG_ID = data.org_id;
-    const PERS_ID = data.person_id;
-    const CONSENT_ID = getId();
+		const ORG_ID = data.org_id;
+		const PERS_ID = data.person_id;
+		const CONSENT_ID = getId();
 
-    let params = {
-      TableName: DYNAMO_TABLE,
-      Item: {
-        PK: `ORG#${ORG_ID}`,
-        SK: `CONS#${CONSENT_ID}`,
-        org_id: ORG_ID,
-        consent_id: CONSENT_ID,
-        person_id: data.person_id,
-        data_key: `CONS#${PERS_ID}`,
-        created_at: new Date().getTime(),
-        updated_at: new Date().getTime(),
-      },
-    };
-    const consData = await dynamodb.save(params);
+		let params = {
+			TableName: DYNAMO_TABLE,
+			Item: {
+				PK: `ORG#${ORG_ID}`,
+				SK: `CONS#${CONSENT_ID}`,
+				org_id: ORG_ID,
+				consent_id: CONSENT_ID,
+				person_id: data.person_id,
+				data_key: `CONS#${PERS_ID}`,
+				created_at: util.getDateFormated(),
+				updated_at: util.getDateFormated(),
+			},
+		};
+		const consData = await dynamodb.save(params);
 
-    return {
-      org_id: consData.Item.org_id,
-      consent_id: consData.Item.consent_id,
-      person_id: consData.Item.person_id
-    };
-  } catch (error) {
-    throw new Error("Consent not recorded try again");
-  }
+		return {
+			org_id: consData.Item.org_id,
+			consent_id: consData.Item.consent_id,
+			person_id: consData.Item.person_id,
+		};
+	} catch (error) {
+		throw new Error('Consent not recorded try again');
+	}
 };
 
 module.exports = {
-  create,
-  // get,
-  // find,
-  // update,
-  // listAssetsById,
-  // listIdentifiersById,
-  // listPersonsById
+	create,
+	// get,
+	// find,
+	// update,
+	// listAssetsById,
+	// listIdentifiersById,
+	// listPersonsById
 };

@@ -1,7 +1,7 @@
-const dynamodb = require("../../shared/lib/dynamo");
-const { getId, getApiKey } = require("../../shared/lib/encryption");
+const dynamodb = require('../../shared/lib/dynamo');
+const { getId, getApiKey } = require('../../shared/lib/encryption');
 
-const DYNAMO_TABLE = "test-privacy-apis-ERD";
+const DYNAMO_TABLE = 'test-privacy-apis-ERD';
 /**
  * Register a Asset on DynamoDB
  * This endpoint receive a simple POST Payload:
@@ -10,39 +10,42 @@ const DYNAMO_TABLE = "test-privacy-apis-ERD";
  * Register on DynamoDB Table
  */
 const createOrganization = async (event) => {
-  const data = event.body ? event.body : event;
+	const data = event.body ? event.body : event;
 
-  /**@TODO Validate Informations.*/
+	/**@TODO Validate Informations.*/
 
-  const ORG_ID = getId();
+	const ORG_ID = getId();
 
-  let params = {
-    TableName: DYNAMO_TABLE,
-    Item: {
-      PK: `ORG#${ORG_ID}`,
-      SK: `#METADATA#${ORG_ID}`,
-      company_id: data.company_id,
-      name: data.name,
-      domain_name: data.domain_name,
-      country: data.country,
-      data: `ORG#${name}`,
-      created_at: new Date().getTime(),
-      updated_at: new Date().getTime(),
-    },
-  };
+	let params = {
+		TableName: DYNAMO_TABLE,
+		Item: {
+			PK: `ORG#${ORG_ID}`,
+			SK: `#METADATA#${ORG_ID}`,
+			company_id: data.company_id,
+			name: data.name,
+			domain_name: data.domain_name,
+			country: data.country,
+			data: `ORG#${name}`,
+			created_at: util.getDateFormated(),
+			updated_at: util.getDateFormated(),
+		},
+	};
 
-  return await dynamodb.save(params);
+	return await dynamodb.save(params);
 };
 
 (async () => {
-  const organizationCreated = await createOrganization({
-    company_id: "98789278000194",
-    name: "Central Nacional Unimed",
-    domain_name: "cnu.com.br",
-    country: "Brazil",
-  });
-  
-  console.log("ORGANIZATION --> ", JSON.stringify(organizationCreated, null, 2));
+	const organizationCreated = await createOrganization({
+		company_id: '98789278000194',
+		name: 'Central Nacional Unimed',
+		domain_name: 'cnu.com.br',
+		country: 'Brazil',
+	});
+
+	console.log(
+		'ORGANIZATION --> ',
+		JSON.stringify(organizationCreated, null, 2)
+	);
 })();
 
 /**  MOCK DUMMY DATA ORGANIZATION
