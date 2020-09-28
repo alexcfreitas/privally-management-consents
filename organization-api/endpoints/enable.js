@@ -124,6 +124,7 @@ module.exports.run = async (event, context, callback) => {
 			200
 		);
 	} catch (error) {
+		console.log('error --> ', JSON.stringify(error, null, 2));
 		return response.json(
 			callback,
 			{

@@ -18,10 +18,10 @@ provider:
 
   environment: #Global Environment variables
     ${file(../configs/${self:provider.stage}.yml)}
-  
+
   iamRoleStatements: # Permissions for all of your functions can be set here
     - Effect: Allow
-      Action: 
+      Action:
         - dynamodb:DescribeTable
         - dynamodb:Query
         - dynamodb:Scan
@@ -86,20 +86,16 @@ custom:
     autoDomain: false
 
 plugins:
-  - serverless-offline
   - serverless-reqvalidator-plugin
   - serverless-aws-documentation
   - serverless-domain-manager
-  - serverless-dynamodb-local
-  - serverless-plugin-include-dependencies
-
 
 functions:
   authorizerAsset:
     handler: endpoints/authorizer.authorizer
 
   start:
-    handler: endpoints/start.run
+    handler: ./endpoints/start.run
     memorySize: 128
     timeout: 30
     events:
@@ -117,9 +113,8 @@ functions:
               application/json: 'sessionStartRequest'
           reqValidatorName: onlyBody
 
-
   end:
-    handler: endpoints/end.run
+    handler: ./endpoints/end.run
     memorySize: 128
     timeout: 30
     events:
@@ -136,7 +131,6 @@ functions:
             requestModels:
               application/json: 'sessionStartRequest'
           reqValidatorName: onlyBody
-
 
 resources:
   Resources:

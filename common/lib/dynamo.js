@@ -3,11 +3,12 @@
 const AWS = require('aws-sdk');
 
 const dev = {
-	region: 'localhost',
-	endpoint: 'http://localhost:8000',
-	accessKeyId: 'MOCK_ACCESS_KEY_ID',
-	secretAccessKey: 'MOCK_SECRET_ACCESS_KEY',
-	convertEmptyValues: true,
+	// region: 'localhost',
+	region: 'sa-east-1',
+	// endpoint: 'http://localhost:8000',
+	accessKeyId: 'AKIA3HPWWSDGMD3YKOGQ',
+	secretAccessKey: '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',
+	// convertEmptyValues: true,
 };
 
 const prod = { region: process.env.REGION || 'sa-east-1' };

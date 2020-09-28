@@ -18,10 +18,10 @@ provider:
 
   environment: #Global Environment variables
     ${file(../configs/${self:provider.stage}.yml)}
-  
+
   iamRoleStatements: # Permissions for all of your functions can be set here
     - Effect: Allow
-      Action: 
+      Action:
         - dynamodb:DescribeTable
         - dynamodb:Query
         - dynamodb:Scan
@@ -85,55 +85,46 @@ custom:
     apiType: rest
     autoDomain: false
 
-  includeDependencies:
-    always:
-      - '../services/**'
-      - '../shared/**'
-
 plugins:
-  - serverless-offline
   - serverless-reqvalidator-plugin
   - serverless-aws-documentation
   - serverless-domain-manager
-  - serverless-dynamodb-local
-  - serverless-offline
 
 functions:
   authorizerAsset:
-    handler: endpoints/authorizer.authorizer
+    handler: ./endpoints/authorizer.authorizer
 
-  findByIdentifier:
-    handler: endpoints/findByIdentifier.run
+  getBySession:
+    handler: ./endpoints/getBySession.run
     memorySize: 128
     timeout: 30
     events:
       - http:
-          path: findByIdentifier
+          path: enable
           method: post
           cors: true
           authorizer: ${self:custom.authorizer.default}
           documentation:
             summary: Find Consent by Session to Privally
-            description: This endpoint receive session for find consent 
+            description: This endpoint receive session for find consent
             requestBody:
               description: Request body for session
 
-  insert:
-    handler: endpoints/insert.run
+  putBySession:
+    handler: ./endpoints/putBySession.run
     memorySize: 128
     timeout: 30
     events:
       - http:
-          path: insert
-          method: post
+          path: enable
+          method: put
           cors: true
           authorizer: ${self:custom.authorizer.default}
           documentation:
             summary: Insert Consent by Session to Privally
-            description: This endpoint receive session for find consent 
+            description: This endpoint receive session for find consent
             requestBody:
               description: Request body for session
-
 
 resources:
   Resources:

@@ -5,13 +5,7 @@
 	"scripts": {
 		"docker": "docker-compose up --force-recreate",
 		"start": "SLS_DEBUG=* serverless offline start --stage local",
-		"dev": "npm install; SLS_DEBUG=* serverless offline start --stage local",
-		"runDev": "cross-env DYNAMO_TABLE=table-consent-management-dev node ./test/start.js",
-		"runFindByIdentifier": "cross-env DYNAMO_TABLE=table-consent-management-dev node ./test/findBySession.js",
-		"runSaveConsent": "cross-env DYNAMO_TABLE=table-consent-management-dev node ./test/saveConsent.js",
-		"runSessionEnd": "cross-env DYNAMO_TABLE=table-consent-management-dev node ./test/end.js",
-		"runEnableOrganization": "cross-env DYNAMO_TABLE=table-consent-management-dev node ./test/organization/enableOrganization.js",
-		"runUpdateOrganization": "cross-env DYNAMO_TABLE=table-consent-management-dev node ./test/organization/updatedOrganization.js",
+		"start:dev": "AWS_PROFILE=privally SLS_DEBUG=* sls offline local-authorizers --stage dev --region sa-east-1",
 		"unit-test": "mocha --recursive test/unit/",
 		"integration-test": "mocha --recursive test/integration/",
 		"create_domain:dev": " SLS_DEBUG=* sls create_domain --stage dev",
@@ -23,6 +17,7 @@
 		"mocha": "^8.1.1",
 		"serverless-dynamodb-local": "0.2.38",
 		"serverless-offline": "^4.10.6",
+		"serverless-offline-local-authorizers-plugin": "1.0.3",
 		"serverless-offline-scheduler": "^0.3.8",
 		"serverless-offline-sqs-esmq": "1.0.0",
 		"serverless-plugin-split-stacks": "^1.9.2"

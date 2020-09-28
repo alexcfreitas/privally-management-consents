@@ -1,25 +1,17 @@
 'use strict';
 const {
-	Session,
-	Identifier,
-	Person,
-	PersonIdentifier,
 	PersonSession,
+	PersonIdentifier,
+	PersonConsent,
 } = require('common').Service;
 
 const response = require('common').Response;
 /**
  * Register a single Session on DynamoDB
  * This endpoint receibe a simple POST Payload like this:
- *
  * {
- *   "spvll": "4f6d4f65d4f65ds465f4ds",
- *   "identifier":{
- *      "key":" ",
- *      "value":"54654564645"
- *   }
+ *   "spvll": "xxxxx"
  * }
- *
  * After receibe a simple payload:
  * Register on DynamoDB Table
  */
@@ -28,10 +20,13 @@ module.exports.run = async (event, context, callback) => {
 		const body = event.body ? event.body : event;
 		const asset = JSON.parse(event.requestContext.authorizer.asset);
 		const data = JSON.parse(body);
+		// const asset = { org_id: '233455000989' }; //RemoveBeforeDeploy
+
+		const { spvll } = data;
 
 		const personSession = await PersonSession.findPersonSessionBySPVLL({
 			org_id: asset.org_id,
-			spvll: data.spvll,
+			spvll,
 		});
 
 		if (Object.keys(personSession).length === 0) {
@@ -40,26 +35,39 @@ module.exports.run = async (event, context, callback) => {
 				{
 					result: {
 						code: 4001,
-						message: `session had not started`,
+						message: `session not started, access /session/start to register your session`,
 					},
 				},
 				400
 			);
 		}
 
-		// Update Person-Session
-		const person_session = await PersonSession.update({
-			PK: personSession.PK,
-			SK: personSession.SK,
-			spvll: data.spvll,
+		//getAllConsentsByPersonId
+		const consents = await PersonConsent.findPersonConsentByPersonId({
+			org_id: asset.org_id,
+			person_id: personSession.person_id,
 		});
+
+		if (consents.length === 0) {
+			return response.json(
+				callback,
+				{
+					result: {
+						code: 4041,
+						message: 'Consents not founded, try again',
+					},
+				},
+				404
+			);
+		}
 
 		return response.json(
 			callback,
 			{
 				result: {
 					code: 2001,
-					message: 'session successfully ended',
+					message: 'consents founded',
+					consents: consents,
 				},
 			},
 			200
@@ -70,7 +78,7 @@ module.exports.run = async (event, context, callback) => {
 			{
 				result: {
 					code: 5001,
-					message: 'session not ended try again',
+					message: 'consents not founded try again',
 					error,
 				},
 			},

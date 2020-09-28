@@ -41,18 +41,13 @@ const create = async (event) => {
 				person_identifier_key: PERSON_IDENTIFIER_KEY,
 				person_identifier_value: PERSON_IDENTIFIER_VALUE,
 				spvll: data.spvll,
-				data_key: `ORG#${ORG_ID}#PERS#SESS#${PERSON_IDENTIFIER_VALUE}`,
+				data_key: `ORG#${ORG_ID}#SPVLL#${data.spvll}`,
 				created_at: util.getDateFormated(),
 				updated_at: util.getDateFormated(),
 			},
 		};
 		const persSessData = await dynamodb.save(params);
-
-		return {
-			org_id: persSessData.Item.org_id,
-			person_id: persSessData.Item.person_id,
-			person_session_id: persSessData.Item.person_session_id,
-		};
+		return persSessData.Item ? { ...persSessData.Item } : {};
 	} catch (error) {
 		throw new Error('PersonSession not recorded try again');
 	}
@@ -82,13 +77,13 @@ const update = async (event) => {
 	}
 };
 
-const findPersonSessionByIdenValue = async (event) => {
+const findPersonSessionBySPVLL = async (event) => {
 	try {
 		const data = event.body ? event.body : event;
 
 		/**@TODO Validate Informations.*/
 		const ORG_ID = data.org_id;
-		const PERSON_IDENTIFIER_VALUE = data.person_identifier_value;
+		const SPVLL = data.spvll;
 
 		let params = {
 			TableName: DYNAMO_TABLE,
@@ -96,12 +91,12 @@ const findPersonSessionByIdenValue = async (event) => {
 			KeyConditionExpression: '#data_key = :data_key',
 			ExpressionAttributeNames: { '#data_key': 'data_key' },
 			ExpressionAttributeValues: {
-				':data_key': `ORG#${ORG_ID}#PERS#SESS#${PERSON_IDENTIFIER_VALUE}`,
+				':data_key': `ORG#${ORG_ID}#SPVLL#${SPVLL}`,
 			},
 		};
 
 		const personSessionData = await dynamodb.list(params);
-		return { ...personSessionData.Items[0] };
+		return personSessionData.Items ? { ...personSessionData.Items[0] } : {};
 	} catch (error) {
 		throw new Error('PersonSession not founded try again');
 	}
@@ -110,7 +105,7 @@ const findPersonSessionByIdenValue = async (event) => {
 module.exports = {
 	create,
 	update,
-	findPersonSessionByIdenValue,
+	findPersonSessionBySPVLL,
 	// get,
 	// find,
 

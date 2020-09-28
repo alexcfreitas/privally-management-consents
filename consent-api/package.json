@@ -42,8 +42,7 @@
 		"serverless-dynamodb-local": "0.2.38",
 		"serverless-offline": "6.7.0",
 		"serverless-offline-lambda": "^1.0.6",
-		"serverless-plugin-ifelse": "1.0.5",
-		"serverless-plugin-include-dependencies": "^4.1.0"
+		"serverless-plugin-ifelse": "1.0.5"
 	},
 	"dependencies": {
 		"common": "file:../common",

@@ -4,14 +4,14 @@ const auth = require('common').Auth;
 const authorizeAsset = (asset, methodArn) => {
 	// TODO: Validate Bussines Rules in Assets
 	// return !asset.isBlocked;
-	// if (!asset.is_active) return false;
+	if (!asset.is_active) return false;
 	return true;
 };
 
 module.exports.authorizer = async (event, context, callback) => {
 	try {
 		const asset = await Asset.findAssetByApiKey({
-			api_key: event.authorizationToken,
+			api_key: event.headers['x-api-key'],
 		});
 
 		const isAllowed =
@@ -21,7 +21,7 @@ module.exports.authorizer = async (event, context, callback) => {
 		const effect = isAllowed ? 'Allow' : 'Deny';
 		const authorizerContext = { asset: JSON.stringify(asset) };
 		const policyDocument = auth.buildIAMPolicy(
-			event.authorizationToken,
+			event.headers['x-api-key'],
 			effect,
 			event.methodArn,
 			authorizerContext

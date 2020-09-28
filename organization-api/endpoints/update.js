@@ -63,7 +63,7 @@ module.exports.run = async (event, context, callback) => {
 
 				const identifierData = await Identifier.update({
 					org_id: organizationId,
-					identifier_key: identifierId,
+					identifier_id: identifierId,
 					identifier_key: key,
 					is_active: isActive,
 					is_deleted: isDeleted,

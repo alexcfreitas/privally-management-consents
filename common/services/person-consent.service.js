@@ -1,4 +1,5 @@
 'use strict';
+const _ = require('lodash');
 const { getId, getApiKey } = require('../lib/encryption');
 const dynamodb = require('../lib/dynamo');
 const util = require('../lib/util');
@@ -27,8 +28,7 @@ const create = async (event) => {
 		const ORG_ID = data.org_id;
 		const PERSON_ID = data.person_id;
 		const CONSENT_ID = data.consent_id;
-		const PERSON_CONSENT_ID = getId();
-		const PERSON_IDENTIFIER_VALUE = data.person_identifier_value;
+		const SPVLL = data.spvll;
 
 		let params = {
 			TableName: DYNAMO_TABLE,
@@ -37,34 +37,29 @@ const create = async (event) => {
 				SK: `ORG#${ORG_ID}#CONS#${CONSENT_ID}`,
 				org_id: ORG_ID,
 				person_id: PERSON_ID,
-				person_consent_id: PERSON_CONSENT_ID,
-				person_identifier_key: data.person_identifier_key,
-				person_identifier_value: data.person_identifier_value,
-				is_accept: data.is_accept,
-				consent_data: data.consent_data,
-				data_key: `ORG#${ORG_ID}#PERS#CONS#${PERSON_IDENTIFIER_VALUE}`,
+				is_accepted: data.is_accepted,
+				consent_type_id: data.consent_type_id,
+				spvll: SPVLL,
+				data_key: `ORG#${ORG_ID}#PERSON#${PERSON_ID}`,
+				consent_at: util.getDateFormated(),
 				created_at: util.getDateFormated(),
 				updated_at: util.getDateFormated(),
 			},
 		};
 		const persConsData = await dynamodb.save(params);
-
-		return {
-			org_id: persConsData.Item.org_id,
-			person_id: persConsData.Item.person_id,
-			person_consent_id: persConsData.Item.person_consent_id,
-		};
+		return persConsData ? { ...persConsData.Item } : {};
 	} catch (error) {
 		throw new Error('PersonConsent not recorded try again');
 	}
 };
-const findPersonConsentByIdenValue = async (event) => {
+
+const findPersonConsentByPersonId = async (event) => {
 	try {
 		const data = event.body ? event.body : event;
 
 		/**@TODO Validate Informations.*/
 		const ORG_ID = data.org_id;
-		const PERSON_IDENTIFIER_VALUE = data.person_identifier_value;
+		const PERSON_ID = data.person_id;
 
 		let params = {
 			TableName: DYNAMO_TABLE,
@@ -72,45 +67,43 @@ const findPersonConsentByIdenValue = async (event) => {
 			KeyConditionExpression: '#data_key = :data_key',
 			ExpressionAttributeNames: { '#data_key': 'data_key' },
 			ExpressionAttributeValues: {
-				':data_key': `ORG#${ORG_ID}#PERS#CONS#${PERSON_IDENTIFIER_VALUE}`,
+				':data_key': `ORG#${ORG_ID}#PERSON#${PERSON_ID}`,
 			},
 		};
 
 		const personConsentData = await dynamodb.list(params);
-		return { ...personConsentData.Items[0] };
+		return personConsentData ? mapPersonConsents(personConsentData.Items) : [];
 	} catch (error) {
 		throw new Error('PersonConsent not founded try again');
 	}
 };
 
-const findPersonConsentBySPVLL = async (event) => {
-	try {
-		const data = event.body ? event.body : event;
+const mapPersonConsents = (personConsents) => {
+	let consents = _.chain(personConsents)
+		.map((consent) => {
+			const { consent_type_id, is_accepted, consent_at } = consent;
+			return {
+				consentTypeId: consent_type_id,
+				isAccepted: is_accepted,
+				consentAt: consent_at,
+			};
+		})
+		.orderBy('consentAt', 'desc')
+		.groupBy('consentTypeId')
+		.map((consent) => {
+			return {
+				consentTypeId: consent[0].consentTypeId,
+				history: _.take(consent, 5),
+			};
+		})
+		.value();
 
-		/**@TODO Validate Informations.*/
-		const SPVLL = data.spvll;
-
-		let params = {
-			TableName: DYNAMO_TABLE,
-			IndexName: 'spvll-filter',
-			KeyConditionExpression: '#spvll = :spvll',
-			ExpressionAttributeNames: { '#spvll': 'spvll' },
-			ExpressionAttributeValues: {
-				':spvll': `SPVLL#${SPVLL}`,
-			},
-		};
-
-		const personConsentData = await dynamodb.list(params);
-		return { ...personConsentData.Items[0] };
-	} catch (error) {
-		throw new Error('PersonConsent not founded try again');
-	}
+	return consents;
 };
 
 module.exports = {
 	create,
-	findPersonConsentByIdenValue,
-	findPersonConsentBySPVLL,
+	findPersonConsentByPersonId,
 	// get,
 	// find,
 	// update,

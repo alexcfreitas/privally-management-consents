@@ -62,20 +62,43 @@ custom:
         title: Privally Session Information
         description: API for Get Information of Session
     models:
-      - name: sessionStartRequest
+      - name: organizationEnableRequest
         contentType: application/json
         schema:
           type: 'object'
           properties:
-            spvll:
+            organizationId:
               type: 'string'
-            identifier:
-              type: 'object'
-              properties:
-                key:
-                  type: 'string'
-                value:
-                  type: 'string'
+            isActive:
+              type: 'boolean'
+            isDeleted:
+              type: 'boolean'
+            assets:
+              type: 'array'
+              items:
+                type: 'object'
+                properties:
+                  assetId:
+                    type: 'string'
+                  url:
+                    type: 'string'
+                  isActive:
+                    type: 'boolean'
+                  isDeleted:
+                    type: 'boolean'
+            identifiers:
+              type: 'array'
+              items:
+                type: 'object'
+                properties:
+                  identifierId:
+                    type: 'string'
+                  key:
+                    type: 'string'
+                  isActive:
+                    type: 'boolean'
+                  isDeleted:
+                    type: 'boolean'
 
   customDomain:
     domainName: ${self:custom.target.domain}
@@ -89,19 +112,16 @@ custom:
     autoDomain: false
 
 plugins:
-  - serverless-offline
   - serverless-reqvalidator-plugin
   - serverless-aws-documentation
   - serverless-domain-manager
-  - serverless-dynamodb-local
-  - serverless-offline
 
 functions:
-  authorizerAsset:
-    handler: endpoints/authorizer.authorizer
+  # authorizerAsset:
+  #   handler: endpoints/authorizer.authorizer
 
   enable:
-    handler: endpoints/enable.run
+    handler: ./endpoints/enable.run
     memorySize: 128
     timeout: 30
     events:
@@ -115,9 +135,11 @@ functions:
             description: This endpoint save a  list of organizations, identifiers and assets
             requestBody:
               description: Request body for create a new Organization
-
+            # requestModels:
+          #     application/json: 'organizationEnableRequest'
+          # reqValidatorName: onlyBody
   update:
-    handler: endpoints/update.run
+    handler: ./endpoints/update.run
     memorySize: 128
     timeout: 30
     events:
@@ -131,7 +153,9 @@ functions:
             description: This endpoint save a  list of organizations, identifiers and assets
             requestBody:
               description: Request body for create a new Organization
-
+          #   requestModels:
+          #     application/json: 'organizationEnableRequest'
+          # reqValidatorName: onlyBody
 resources:
   Resources:
     onlyBody:
@@ -166,7 +190,7 @@ resources:
               - AttributeName: PK
                 KeyType: HASH
               - AttributeName: data_key
-                KeyType: S
+                KeyType: RANGE
             Projection:
               ProjectionType: ALL
           - IndexName: data_key-filter

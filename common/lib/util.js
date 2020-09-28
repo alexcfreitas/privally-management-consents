@@ -1,4 +1,5 @@
 'use strict';
+const _ = require('lodash');
 const moment = require('moment-timezone');
 
 const generateUpdateQuery = (fields) => {
@@ -22,7 +23,13 @@ const getDateFormated = () => {
 		.format('YYYY-MM-DD HH:mm:ss');
 };
 
+const orderBy = (arrayObjects, config) => _.orderBy(arrayObjects, config);
+
+const toCamelCase = (param) => _.camelCase(param);
+
 module.exports = {
 	generateUpdateQuery,
 	getDateFormated,
+	toCamelCase,
+	orderBy,
 };

@@ -14,7 +14,8 @@
 	},
 	"dependencies": {
 		"moment-timezone": "^0.5.31",
-		"uuid-apikey": "1.4.6"
+		"uuid-apikey": "1.4.6",
+		"lodash": "^4.17.20"
 	},
 	"author": "",
 	"license": "ISC"
