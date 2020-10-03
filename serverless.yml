@@ -1,16 +1,15 @@
-service: session
+service: privacy-consent-management
+
 provider:
   name: aws
   endpointType: REGIONAL
   runtime: nodejs12.x
-  # profile: privally
+  profile: privally
   region: sa-east-1
   timeout: 10
   stage: ${opt:stage, 'prod'}
   memorySize: 128
   versionFunctions: false
-  apiKeys:
-    - ${self:custom.prefix}-apiKey
   package:
     excludeDevDependencies: true
     exclude:
@@ -23,7 +22,7 @@ provider:
 
   iamRoleStatements: # Permissions for all of your functions can be set here
     - Effect: Allow
-      Action: # Gives permission to DynamoDB tables in a specific region
+      Action:
         - dynamodb:DescribeTable
         - dynamodb:Query
         - dynamodb:Scan
@@ -37,8 +36,30 @@ custom:
   region: ${self:provider.region}
   stage: ${opt:stage, self:provider.stage}
   prefix: ${self:service}-${self:custom.stage}
-  dynamo-session: table-${self:custom.prefix}
-  stageDomainNameApi: api.privally.ws
+  dynamo-consent-management: table-consent-management-${self:custom.stage}
+  sns-logs: ${self:custom.prefix}-trigger-logs
+  sqs-logs: ${self:custom.prefix}-messages-logs
+  stageTargets:
+    local:
+      domain: dev-sandbox.api.privally.ws
+      certificate: 'arn:aws:acm:sa-east-1:772000878796:certificate/0dfc4a90-633b-485c-a54c-41b16889b283'
+    dev:
+      domain: dev-sandbox.api.privally.ws
+      certificate: 'arn:aws:acm:sa-east-1:772000878796:certificate/0dfc4a90-633b-485c-a54c-41b16889b283'
+    sandbox:
+      domain: sandbox.api.privally.ws
+      certificate: 'arn:aws:acm:sa-east-1:772000878796:certificate/0dfc4a90-633b-485c-a54c-41b16889b283'
+    prod:
+      domain: api.privally.ws
+      certificate: 'arn:aws:acm:sa-east-1:772000878796:certificate/b3aacd15-7859-4022-9e6b-65c967eb9c03'
+  target: ${self:custom.stageTargets.${self:custom.stage}}
+
+  authorizer:
+    default:
+      name: authorizerAsset
+      type: token
+      identitySource: method.request.header.x-api-key
+      resultTtlInSeconds: 0
 
   documentation:
     api:
@@ -61,60 +82,123 @@ custom:
                   type: 'string'
                 value:
                   type: 'string'
-      - name: sessionEndRequest
-        contentType: application/json
-        schema:
-          type: 'object'
-          properties:
-            spvll:
-              type: 'string'             
-
-  serverlessIfElse:
-    - If: '"${self:custom.stage}" == "dev"'
-      Set:
-        custom.stageDomainNameApi: dev.api.privally.ws
-        certificateArn: 'arn:aws:acm:sa-east-1:772000878796:certificate/0dfc4a90-633b-485c-a54c-41b16889b283'
-
-    - If: '"${self:custom.stage}" == "sandbox"'
-      Set:
-        custom.stageDomainNameApi: sandbox.api.privally.ws
-        certificateArn: 'arn:aws:acm:sa-east-1:772000878796:certificate/0dfc4a90-633b-485c-a54c-41b16889b283'
-
-    - If: '"${self:custom.stage}" == "prod"'
-      Set:
-        custom.stageDomainNameApi: api.privally.ws
-        custom.certificateName: '*.privally.ws'
 
   customDomain:
-    domainName: ${self:custom.stageDomainNameApi}
+    domainName: ${self:custom.target.domain}
     stage: ${self:provider.stage}
-    basePath: session
-    # certificateName: '*.api.privally.ws'
-    certificateArn: 'arn:aws:acm:sa-east-1:772000878796:certificate/0dfc4a90-633b-485c-a54c-41b16889b283'
+    basePath: organization
+    certificateArn: ${self:custom.target.certificate}
     createRoute53Record: true
     endpointType: 'regional'
     securityPolicy: tls_1_2
     apiType: rest
     autoDomain: false
 
+  serverless-offline:
+    host: '0.0.0.0'
+
+  splitStacks:
+    perFunction: true
+    perType: true
+
+  # serverless-offline-sqs-esmq:
+  #   apiVersion: '2012-11-05'
+  #   endpoint: http://localhost:9324
+  #   region: sa-east-1
+  #   accessKeyId: root
+  #   secretAccessKey: root
+
+  dynamodb:
+    stages:
+      - local
+    start:
+      host: 'localhost'
+      port: 8005
+      inMemory: false
+      migrate: true
+      noStart: true
+
 plugins:
+  - serverless-offline-local-authorizers-plugin
   - serverless-offline
   - serverless-reqvalidator-plugin
   - serverless-aws-documentation
   - serverless-domain-manager
-  - serverless-plugin-ifelse
+  - serverless-pseudo-parameters
+  - serverless-dynamodb-local
+  - serverless-offline-sqs-esmq
 
 functions:
-  start:
-    handler: modules/session/endpoints/create.create
+  authorizerAsset:
+    handler: endpoints/authorizer.authorizer
+
+  getBySession:
+    handler: ./consent-api/endpoints/getBySession.run
     memorySize: 128
     timeout: 30
     events:
       - http:
-          path: start
+          path: consent/enable
           method: post
-          private: true
+          authorizer:
+            type: CUSTOM
+            authorizerId: abcjfk
+            localAuthorizer:
+              name: 'authorizer'
+              type: 'request'
           cors: true
+          # authorizer: ${self:custom.authorizer.default}
+          documentation:
+            summary: Send Information Session to Privally
+            description: This endpoint receive session token with identifier field
+            requestBody:
+              description: Request body for session
+            requestModels:
+              application/json: 'sessionStartRequest'
+          reqValidatorName: onlyBody
+
+  putBySession:
+    handler: ./consent-api/endpoints/putBySession.run
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: consent/enable
+          method: put
+          authorizer:
+            type: CUSTOM
+            authorizerId: abcjfk
+            localAuthorizer:
+              name: 'authorizer'
+              type: 'request'
+          cors: true
+          # authorizer: ${self:custom.authorizer.default}
+          documentation:
+            summary: Send Information Session to Privally
+            description: This endpoint receive session token with identifier field
+            requestBody:
+              description: Request body for session
+            requestModels:
+              application/json: 'sessionStartRequest'
+          reqValidatorName: onlyBody
+
+  start:
+    handler: ./session-api/endpoints/start.run
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: session/start
+          method: post
+          authorizer:
+            type: CUSTOM
+            authorizerId: abcjfk
+            localAuthorizer:
+              name: 'authorizer'
+              type: 'request'
+
+          cors: true
+          # authorizer: ${self:custom.authorizer.default}
           documentation:
             summary: Send Information Session to Privally
             description: This endpoint receive session token with identifier field
@@ -125,23 +209,61 @@ functions:
           reqValidatorName: onlyBody
 
   end:
-    handler: modules/session/endpoints/end.end
+    handler: ./session-api/endpoints/end.run
     memorySize: 128
     timeout: 30
     events:
       - http:
-          path: end
+          path: session/end
           method: post
-          private: true
+          authorizer:
+            type: CUSTOM
+            authorizerId: abcjfk
+            localAuthorizer:
+              name: 'authorizer'
+              type: 'request'
           cors: true
+          # authorizer: ${self:custom.authorizer.default}
           documentation:
-            summary: End Session to Privally
-            description: This endpoint receive session token to ended
+            summary: Send Information Session to Privally
+            description: This endpoint receive session token with identifier field
             requestBody:
-              description: Request body for end session
+              description: Request body for session
             requestModels:
-              application/json: 'sessionEndRequest'              
+              application/json: 'sessionStartRequest'
           reqValidatorName: onlyBody
+
+  enable:
+    handler: ./organization-api/endpoints/enable.run
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: organization/enable
+          method: post
+          cors: true
+          # authorizer: ${self:custom.authorizer.default}
+          documentation:
+            summary: Create a new Organization to Privally
+            description: This endpoint save a  list of organizations, identifiers and assets
+            requestBody:
+              description: Request body for create a new Organization
+
+  update:
+    handler: ./organization-api/endpoints/update.run
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: organization/enable
+          method: put
+          cors: true
+          # authorizer: ${self:custom.authorizer.default}
+          documentation:
+            summary: Create a new Organization to Privally
+            description: This endpoint save a  list of organizations, identifiers and assets
+            requestBody:
+              description: Request body for create a new Organization
 
 resources:
   Resources:
@@ -154,27 +276,43 @@ resources:
         ValidateRequestBody: true
         ValidateRequestParameters: true
 
-    sessionTable:
+    consentManagementTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:custom.dynamo-session}
+        TableName: ${self:custom.dynamo-consent-management}
         AttributeDefinitions:
-          - AttributeName: pk
+          - AttributeName: PK
             AttributeType: S
-          - AttributeName: sk
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: data_key
             AttributeType: S
         BillingMode: PAY_PER_REQUEST
         KeySchema:
-          - AttributeName: pk
+          - AttributeName: PK
             KeyType: HASH
-          - AttributeName: sk
+          - AttributeName: SK
             KeyType: RANGE
         GlobalSecondaryIndexes:
-          - IndexName: sk-pk-index
+          - IndexName: PK-data_key-Filter
             KeySchema:
-              - AttributeName: sk
+              - AttributeName: PK
                 KeyType: HASH
-              - AttributeName: pk
-                KeyType: RANGE
+              - AttributeName: data_key
+                KeyType: S
             Projection:
               ProjectionType: ALL
+          - IndexName: data_key-filter
+            KeySchema:
+              - AttributeName: data_key
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+    # SQS Queue to Update DynamoDB
+    ConsentQueueExample:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:custom.sqs-logs}
+        MessageRetentionPeriod: 1209600
+        VisibilityTimeout: 60
